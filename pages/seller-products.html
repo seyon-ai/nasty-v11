@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Products — NASTY Seller</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>"/>
+  <link rel="stylesheet" href="../css/global.css"/><link rel="stylesheet" href="../css/animations.css"/><link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <style>
+    .portal-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;padding-top:70px}
+    .portal-sidebar{background:var(--obsidian-2);border-right:1px solid var(--border);padding:2rem 0;position:sticky;top:70px;height:calc(100vh - 70px);overflow-y:auto}
+    .sidebar-logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+    .sidebar-logo-text{font-family:var(--font-display);font-size:1.1rem;font-weight:900;color:var(--gold-bright);letter-spacing:.1em}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:.75rem 1.5rem;font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .2s;border-left:2px solid transparent;text-decoration:none}
+    .sidebar-link:hover{color:var(--text-primary);background:rgba(201,147,42,.04);border-left-color:var(--gold-deep)}
+    .sidebar-link.active{color:var(--gold-bright);background:rgba(201,147,42,.07);border-left-color:var(--gold)}
+    .portal-main{padding:2.5rem}
+    .product-row{display:grid;grid-template-columns:80px 1fr auto auto auto;gap:1rem;align-items:center;padding:1rem 1.5rem;background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;transition:all .2s}
+    .product-row:hover{border-color:var(--border-bright)}
+    .product-row-img{width:80px;height:60px;border-radius:var(--radius-sm);object-fit:cover;background:var(--obsidian-4)}
+    .product-row-title{font-family:var(--font-heading);font-size:14px;font-weight:500;color:var(--text-primary)}
+    .product-row-cat{font-size:11px;color:var(--text-muted);margin-top:2px}
+    .product-row-price{font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--gold-bright);text-align:right}
+    .product-row-stock{font-size:12px;text-align:center}
+    .stock-ok{color:var(--emerald-bright)}
+    .stock-low{color:var(--gold)}
+    .stock-out{color:var(--ember-bright)}
+    .row-actions{display:flex;gap:8px}
+    .row-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-muted);cursor:pointer;transition:all .2s}
+    .row-btn:hover{border-color:var(--gold);color:var(--gold-bright)}
+    .row-btn.delete:hover{border-color:var(--ember);color:var(--ember-bright)}
+    /* Add product modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);z-index:8000;display:none;align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.active{display:flex}
+    .product-modal{width:100%;max-width:700px;max-height:90vh;overflow-y:auto;background:var(--obsidian-2);border:1px solid var(--border-bright);border-radius:var(--radius-xl);padding:2.5rem}
+    .product-modal::-webkit-scrollbar{width:3px}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+    .modal-title{font-family:var(--font-heading);font-size:1.1rem;font-weight:700;color:var(--text-primary)}
+    .img-preview-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .img-preview{width:80px;height:80px;border-radius:var(--radius-md);object-fit:cover;border:1px solid var(--border);position:relative}
+    .img-preview .remove-img{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--ember);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;cursor:pointer}
+    .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+    .ai-assist-btn{font-size:11px;color:var(--gold);display:flex;align-items:center;gap:4px;cursor:pointer;margin-top:6px;transition:opacity .2s}
+    .ai-assist-btn:hover{opacity:.7}
+    @media(max-width:900px){.portal-layout{grid-template-columns:1fr}.portal-sidebar{display:none}.product-row{grid-template-columns:60px 1fr auto}.product-row-price,.product-row-stock{display:none}}
+  </style>
+</head>
+<body>
+  <div class="cursor"></div><div class="cursor-ring"></div>
+  <nav class="navbar scrolled" style="z-index:200">
+    <div class="container navbar-inner">
+      <a href="../index.html" class="navbar-logo">NASTY</a>
+      <div class="navbar-actions">
+        <a href="shop.html" class="btn-ghost" style="font-size:12px">View Store</a>
+        <button class="nav-icon-btn" onclick="window.location.href='account.html'"><span style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--gold)">S</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="portal-layout">
+    <aside class="portal-sidebar">
+      <div class="sidebar-logo"><div class="sidebar-logo-text">Seller Portal</div></div>
+      <a href="seller.html" class="sidebar-link"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="seller-products.html" class="sidebar-link active"><i class="ti ti-package"></i> Products</a>
+      <a href="seller-orders.html" class="sidebar-link"><i class="ti ti-receipt"></i> Orders</a>
+      <a href="seller.html#analytics" class="sidebar-link"><i class="ti ti-chart-bar"></i> Analytics</a>
+      <a href="seller.html#ai-tools" class="sidebar-link"><i class="ti ti-robot"></i> AI Tools</a>
+      <a href="seller.html#settings" class="sidebar-link"><i class="ti ti-settings"></i> Settings</a>
+    </aside>
+
+    <main class="portal-main">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+        <div>
+          <div style="font-family:var(--font-heading);font-size:1.4rem;font-weight:700;color:var(--text-primary)">Products</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px"><span id="product-count">0</span> products listed</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div class="search-wrap" style="width:220px">
+            <input type="text" class="search-input" id="product-search" placeholder="Search products..." oninput="filterProducts(this.value)" style="padding:10px 40px 10px 16px;font-size:13px"/>
+            <button class="search-btn" style="width:32px;height:32px;font-size:12px"><i class="ti ti-search"></i></button>
+          </div>
+          <button class="btn-primary" style="font-size:12px;padding:10px 18px" onclick="openAddModal()"><span><i class="ti ti-plus"></i> Add Product</span></button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap">
+        <button class="category-chip active" onclick="filterCat('all',this)">All</button>
+        <button class="category-chip" onclick="filterCat('active',this)">Active</button>
+        <button class="category-chip" onclick="filterCat('draft',this)">Drafts</button>
+        <button class="category-chip" onclick="filterCat('low_stock',this)">Low Stock</button>
+      </div>
+
+      <div id="products-list"></div>
+    </main>
+  </div>
+
+  <!-- ADD/EDIT PRODUCT MODAL -->
+  <div class="modal-overlay" id="product-modal">
+    <div class="product-modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title-text">Add New Product</div>
+        <button onclick="closeModal()" style="color:var(--text-muted);font-size:1.2rem"><i class="ti ti-x"></i></button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1.25rem">
+        <div class="form-group">
+          <label class="form-label">Product Title</label>
+          <input type="text" class="form-input" id="p-title" placeholder="e.g. Obsidian Leather Jacket"/>
+          <div class="ai-assist-btn" onclick="aiWriteTitle()"><i class="ti ti-sparkles"></i> AI Suggest Title</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input" id="p-desc" rows="4" placeholder="Describe your product..." style="resize:vertical"></textarea>
+          <div class="ai-assist-btn" onclick="aiWriteDesc()"><i class="ti ti-sparkles"></i> AI Write Description</div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-input" id="p-category">
+              <option>Fashion</option><option>Electronics</option><option>Beauty</option><option>Home</option><option>Sports</option><option>Books</option><option>Food</option><option>Toys</option><option>Automotive</option><option>Gaming</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price ($)</label>
+            <input type="number" class="form-input" id="p-price" placeholder="0.00" min="0" step="0.01"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock</label>
+            <input type="number" class="form-input" id="p-stock" placeholder="0" min="0"/>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group">
+            <label class="form-label">Original Price ($) <span style="color:var(--text-muted)">(optional)</span></label>
+            <input type="number" class="form-input" id="p-original-price" placeholder="0.00" min="0" step="0.01"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU</label>
+            <input type="text" class="form-input" id="p-sku" placeholder="Auto-generated"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tags <span style="color:var(--text-muted)">(comma separated)</span></label>
+          <input type="text" class="form-input" id="p-tags" placeholder='leather, jacket, dark, fashion'/>
+          <div class="ai-assist-btn" onclick="aiGenerateTags()"><i class="ti ti-sparkles"></i> AI Generate Tags</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sizes <span style="color:var(--text-muted)">(comma separated, optional)</span></label>
+          <input type="text" class="form-input" id="p-sizes" placeholder='XS, S, M, L, XL'/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Product Images</label>
+          <div style="border:2px dashed var(--border);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;transition:all .3s" onclick="document.getElementById('p-images').click()" id="img-upload-zone">
+            <div style="font-size:2rem;margin-bottom:6px">📸</div>
+            <div style="font-size:13px;color:var(--text-muted)">Click to upload images</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Max 5 images · 10MB each</div>
+          </div>
+          <input type="file" id="p-images" multiple accept="image/*" style="display:none" onchange="handleProductImages(this)"/>
+          <div class="img-preview-grid" id="img-previews"></div>
+          <div id="upload-progress" style="display:none;font-size:12px;color:var(--gold);margin-top:8px"></div>
+        </div>
+
+        <div style="display:flex;gap:12px;padding-top:1rem;border-top:1px solid var(--border)">
+          <button class="btn-outline" style="font-size:12px;padding:10px 20px" onclick="saveProduct('draft')">Save as Draft</button>
+          <button class="btn-primary" style="flex:1;justify-content:center;font-size:13px" onclick="saveProduct('active')" id="publish-btn"><span>Publish Product</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script type="module">
+    import { initCursor, showToast, uid } from '../js/core/utils.js';
+    import { generateListing as aiGenerateListing } from '../js/ai/groq.js';
+    import { tagProductImage } from '../js/ai/huggingface.js';
+    import { uploadImage, validateImage } from '../js/ai/imgbb.js';
+    import { db } from '../js/core/firebase.js';
+    import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { getUser, onAuthChange } from '../js/core/auth.js';
+    initCursor();
+
+    let products = JSON.parse(localStorage.getItem('nasty_seller_products') || '[]');
+    let uploadedImageUrls = [];
+    let editingId = null;
+
+    if (!products.length) {
+      products = [
+        {id:'p1',title:'Obsidian Leather Jacket',category:'Fashion',price:189,stock:12,status:'active',image:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200',sku:'OLJ-001'},
+        {id:'p2',title:'Dragon Edition Headphones',category:'Electronics',price:249,stock:3,status:'active',image:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200',sku:'DEH-001'},
+        {id:'p3',title:'Gold Aura Perfume Set',category:'Beauty',price:95,stock:0,status:'active',image:'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=200',sku:'GAP-001'},
+        {id:'p4',title:'Mystic Desk Lamp',category:'Home',price:78,stock:8,status:'draft',image:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',sku:'MDL-001'},
+      ];
+      localStorage.setItem('nasty_seller_products', JSON.stringify(products));
+    }
+
+    let filtered = [...products];
+
+    function render() {
+      document.getElementById('product-count').textContent = products.length;
+      const list = document.getElementById('products-list');
+      if (!filtered.length) {
+        list.innerHTML = `<div style="text-align:center;padding:4rem;color:var(--text-muted)"><div style="font-size:3rem;margin-bottom:1rem">📦</div><div>No products found</div></div>`;
+        return;
+      }
+      list.innerHTML = filtered.map(p => `
+        <div class="product-row">
+          <img class="product-row-img" src="${p.image||'https://via.placeholder.com/80x60/111118/c9932a?text=IMG'}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/80x60/111118/c9932a?text=IMG'"/>
+          <div>
+            <div class="product-row-title">${p.title}</div>
+            <div class="product-row-cat">${p.category} · ${p.sku||'—'} · <span style="color:${p.status==='active'?'var(--emerald-bright)':'var(--text-muted)'}">${p.status}</span></div>
+          </div>
+          <div class="product-row-stock">
+            <span class="${p.stock===0?'stock-out':p.stock<5?'stock-low':'stock-ok'}">${p.stock===0?'Out of stock':p.stock<5?p.stock+' left':p.stock+' in stock'}</span>
+          </div>
+          <div class="product-row-price">$${p.price}</div>
+          <div class="row-actions">
+            <button class="row-btn" onclick="editProduct('${p.id}')" title="Edit"><i class="ti ti-edit"></i></button>
+            <button class="row-btn delete" onclick="deleteProduct('${p.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>`).join('');
+    }
+
+    window.filterProducts = (q) => { filtered = products.filter(p => p.title.toLowerCase().includes(q.toLowerCase()) || p.category.toLowerCase().includes(q.toLowerCase())); render(); };
+    window.filterCat = (cat, btn) => {
+      document.querySelectorAll('.category-chip').forEach(c=>c.classList.remove('active')); btn.classList.add('active');
+      if(cat==='all') filtered=[...products];
+      else if(cat==='active') filtered=products.filter(p=>p.status==='active');
+      else if(cat==='draft') filtered=products.filter(p=>p.status==='draft');
+      else if(cat==='low_stock') filtered=products.filter(p=>p.stock<5);
+      render();
+    };
+
+    window.openAddModal = () => {
+      editingId = null;
+      document.getElementById('modal-title-text').textContent = 'Add New Product';
+      ['p-title','p-desc','p-price','p-stock','p-tags','p-sizes','p-original-price','p-sku'].forEach(id => document.getElementById(id).value = '');
+      uploadedImageUrls = [];
+      document.getElementById('img-previews').innerHTML = '';
+      document.getElementById('product-modal').classList.add('active');
+    };
+    window.closeModal = () => { document.getElementById('product-modal').classList.remove('active'); };
+
+    window.editProduct = (id) => {
+      const p = products.find(x=>x.id===id);
+      if (!p) return;
+      editingId = id;
+      document.getElementById('modal-title-text').textContent = 'Edit Product';
+      document.getElementById('p-title').value = p.title || '';
+      document.getElementById('p-desc').value = p.description || '';
+      document.getElementById('p-price').value = p.price || '';
+      document.getElementById('p-stock').value = p.stock || '';
+      document.getElementById('p-tags').value = (p.tags||[]).join(', ');
+      document.getElementById('p-sizes').value = (p.sizes||[]).join(', ');
+      document.getElementById('p-original-price').value = p.originalPrice || '';
+      document.getElementById('p-sku').value = p.sku || '';
+      uploadedImageUrls = p.images || [p.image].filter(Boolean);
+      document.getElementById('img-previews').innerHTML = uploadedImageUrls.map((url,i)=>`<div class="img-preview"><img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm)"/><div class="remove-img" onclick="removeImg(${i})">✕</div></div>`).join('');
+      document.getElementById('product-modal').classList.add('active');
+    };
+
+    window.deleteProduct = (id) => {
+      if (!confirm('Delete this product?')) return;
+      products = products.filter(p=>p.id!==id);
+      filtered = filtered.filter(p=>p.id!==id);
+      localStorage.setItem('nasty_seller_products', JSON.stringify(products));
+      render(); showToast('Product deleted','info');
+    };
+
+    window.saveProduct = async (status) => {
+      const btn = document.getElementById('publish-btn');
+      const title = document.getElementById('p-title').value.trim();
+      const price = parseFloat(document.getElementById('p-price').value);
+      if (!title || !price) { showToast('Title and price are required','error'); return; }
+
+      btn.innerHTML = '<span class="spin">↻</span>';
+
+      const product = {
+        id: editingId || uid(),
+        title,
+        description: document.getElementById('p-desc').value,
+        category: document.getElementById('p-category').value,
+        price,
+        originalPrice: parseFloat(document.getElementById('p-original-price').value) || null,
+        stock: parseInt(document.getElementById('p-stock').value) || 0,
+        tags: document.getElementById('p-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+        sizes: document.getElementById('p-sizes').value.split(',').map(s=>s.trim()).filter(Boolean),
+        sku: document.getElementById('p-sku').value || `SKU-${Date.now().toString(36).toUpperCase()}`,
+        images: uploadedImageUrls,
+        image: uploadedImageUrls[0] || null,
+        status,
+        createdAt: new Date().toISOString()
+      };
+
+      // Try save to Firestore
+      try {
+        const user = getUser();
+        if (user) {
+          await addDoc(collection(db, 'products'), { ...product, sellerId: user.uid, sellerName: user.displayName, createdAt: serverTimestamp() });
+        }
+      } catch {}
+
+      // Always save locally
+      if (editingId) products = products.map(p=>p.id===editingId?product:p);
+      else products.push(product);
+      filtered = [...products];
+      localStorage.setItem('nasty_seller_products', JSON.stringify(products));
+
+      btn.innerHTML = '<span>Publish Product</span>';
+      closeModal(); render();
+      showToast(status==='active'?'Product published! 🔥':'Saved as draft','success');
+    };
+
+    window.handleProductImages = async (input) => {
+      const files = Array.from(input.files).slice(0, 5);
+      const progressEl = document.getElementById('upload-progress');
+      progressEl.style.display = 'block';
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const valid = validateImage(f);
+        if (!valid.valid) { showToast(valid.error,'error'); continue; }
+        progressEl.textContent = `Uploading ${i+1}/${files.length}...`;
+        const result = await uploadImage(f, `product_${Date.now()}`);
+        if (result.success) {
+          uploadedImageUrls.push(result.url);
+          const previews = document.getElementById('img-previews');
+          const idx = uploadedImageUrls.length - 1;
+          previews.innerHTML += `<div class="img-preview" id="prev-${idx}"><img src="${result.url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm)"/><div class="remove-img" onclick="removeImg(${idx})">✕</div></div>`;
+        } else {
+          // Fallback: use local object URL for preview
+          const url = URL.createObjectURL(f);
+          uploadedImageUrls.push(url);
+        }
+      }
+      progressEl.textContent = 'Upload complete!';
+      setTimeout(()=>progressEl.style.display='none', 2000);
+    };
+
+    window.removeImg = (idx) => {
+      uploadedImageUrls.splice(idx, 1);
+      document.getElementById('img-previews').innerHTML = uploadedImageUrls.map((url,i)=>`<div class="img-preview"><img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm)"/><div class="remove-img" onclick="removeImg(${i})">✕</div></div>`).join('');
+    };
+
+    // ---- AI assists ----
+    window.aiWriteTitle = async () => {
+      const kw = document.getElementById('p-title').value || document.getElementById('p-desc').value.slice(0,50);
+      if (!kw) { showToast('Type a few words first','error'); return; }
+      showToast('AI writing title...','info');
+      const cat = document.getElementById('p-category').value;
+      const price = document.getElementById('p-price').value;
+      const result = await aiGenerateListing(kw, cat, price||50);
+      if (result?.title) { document.getElementById('p-title').value = result.title; showToast('Title generated ✦','success'); }
+    };
+    window.aiWriteDesc = async () => {
+      const kw = document.getElementById('p-title').value || document.getElementById('p-desc').value.slice(0,50);
+      if (!kw) { showToast('Add a title first','error'); return; }
+      showToast('AI writing description...','info');
+      const cat = document.getElementById('p-category').value;
+      const price = document.getElementById('p-price').value;
+      const result = await aiGenerateListing(kw, cat, price||50);
+      if (result?.description) { document.getElementById('p-desc').value = result.description; showToast('Description generated ✦','success'); }
+    };
+    window.aiGenerateTags = async () => {
+      const kw = document.getElementById('p-title').value;
+      if (!kw) { showToast('Add a title first','error'); return; }
+      showToast('AI generating tags...','info');
+      const cat = document.getElementById('p-category').value;
+      const result = await aiGenerateListing(kw, cat, 50);
+      if (result?.tags) { document.getElementById('p-tags').value = result.tags.join(', '); showToast('Tags generated ✦','success'); }
+    };
+
+    render();
+  </script>
+</body>
+</html>
