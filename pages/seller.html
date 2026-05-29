@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Seller Portal — NASTY</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>"/>
+  <link rel="stylesheet" href="../css/global.css"/><link rel="stylesheet" href="../css/animations.css"/><link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <style>
+    .portal-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;padding-top:70px}
+    .portal-sidebar{background:var(--obsidian-2);border-right:1px solid var(--border);padding:2rem 0;position:sticky;top:70px;height:calc(100vh - 70px);overflow-y:auto}
+    .portal-sidebar::-webkit-scrollbar{width:2px}
+    .sidebar-logo{padding:0 1.5rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+    .sidebar-logo-text{font-family:var(--font-display);font-size:1.1rem;font-weight:900;color:var(--gold-bright);letter-spacing:.1em}
+    .sidebar-logo-sub{font-size:11px;color:var(--text-muted);letter-spacing:.08em}
+    .sidebar-section{padding:.5rem 1rem;font-family:var(--font-heading);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);margin-top:1rem}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:.75rem 1.5rem;font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .2s;border-left:2px solid transparent}
+    .sidebar-link:hover{color:var(--text-primary);background:rgba(201,147,42,.04);border-left-color:var(--gold-deep)}
+    .sidebar-link.active{color:var(--gold-bright);background:rgba(201,147,42,.07);border-left-color:var(--gold)}
+    .sidebar-link i{font-size:1.1rem;width:20px}
+    .portal-main{padding:2.5rem;overflow-x:hidden}
+    .portal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2.5rem;gap:1rem;flex-wrap:wrap}
+    .portal-title{font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--text-primary)}
+    .portal-subtitle{font-size:13px;color:var(--text-secondary);margin-top:4px}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2.5rem}
+    .stat-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;transition:all .3s;position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .3s}
+    .stat-card:hover{border-color:var(--border-bright);transform:translateY(-2px)}
+    .stat-card:hover::before{opacity:1}
+    .stat-card-icon{width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:1rem}
+    .stat-card-value{font-family:var(--font-display);font-size:1.8rem;font-weight:900;color:var(--gold-bright);line-height:1}
+    .stat-card-label{font-family:var(--font-heading);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-top:4px}
+    .stat-card-change{font-size:11px;margin-top:6px}
+    .change-up{color:var(--emerald-bright)}
+    .change-down{color:var(--ember)}
+    .chart-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem}
+    .chart-title{font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between}
+    .mini-chart{height:120px;display:flex;align-items:flex-end;gap:6px}
+    .bar{flex:1;background:linear-gradient(to top,var(--gold-deep),var(--gold));border-radius:3px 3px 0 0;transition:all .3s;cursor:pointer;min-height:4px}
+    .bar:hover{background:linear-gradient(to top,var(--gold),var(--gold-shimmer))}
+    .chart-labels{display:flex;gap:6px;margin-top:6px}
+    .chart-label{flex:1;text-align:center;font-size:9px;color:var(--text-muted);font-family:var(--font-heading);letter-spacing:.05em}
+    .recent-table{width:100%;border-collapse:collapse}
+    .recent-table th{font-family:var(--font-heading);font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+    .recent-table td{padding:14px 12px;font-size:13px;color:var(--text-secondary);border-bottom:1px solid rgba(201,147,42,.06)}
+    .recent-table tr:hover td{color:var(--text-primary);background:rgba(201,147,42,.02)}
+    .order-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.08em}
+    .status-pending{background:rgba(201,147,42,.1);color:var(--gold-bright)}
+    .status-processing{background:rgba(74,173,120,.1);color:var(--emerald-glow)}
+    .status-shipped{background:rgba(59,130,246,.1);color:#60a5fa}
+    .status-delivered{background:rgba(46,118,82,.1);color:var(--emerald-bright)}
+    .status-cancelled{background:rgba(212,66,10,.1);color:var(--ember-bright)}
+    .onboarding-card{background:linear-gradient(135deg,var(--obsidian-3),var(--obsidian-4));border:1px solid var(--border-bright);border-radius:var(--radius-xl);padding:3rem;text-align:center;margin-bottom:2rem}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    @media(max-width:900px){.portal-layout{grid-template-columns:1fr}.portal-sidebar{display:none}.stats-row{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="cursor"></div><div class="cursor-ring"></div>
+
+  <!-- TOP NAV -->
+  <nav class="navbar scrolled" style="z-index:200">
+    <div class="container navbar-inner">
+      <a href="../index.html" class="navbar-logo">NASTY</a>
+      <div class="navbar-actions">
+        <a href="shop.html" class="btn-ghost" style="font-size:12px"><i class="ti ti-eye"></i> View Store</a>
+        <button class="nav-icon-btn" id="notif-btn" title="Notifications"><i class="ti ti-bell"></i><span class="nav-badge" style="background:var(--ember)">3</span></button>
+        <button class="nav-icon-btn" id="nav-user-btn" onclick="window.location.href='account.html'"><span id="nav-user-avatar" style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--gold)">S</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="portal-layout">
+    <!-- SIDEBAR -->
+    <aside class="portal-sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-text">Seller Portal</div>
+        <div class="sidebar-logo-sub" id="seller-store-name">My Store</div>
+      </div>
+      <div class="sidebar-section">Overview</div>
+      <div class="sidebar-link active" onclick="showSection('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+      <div class="sidebar-link" onclick="window.location.href='seller-products.html'"><i class="ti ti-package"></i> Products</div>
+      <div class="sidebar-link" onclick="window.location.href='seller-orders.html'"><i class="ti ti-receipt"></i> Orders</div>
+      <div class="sidebar-section">Business</div>
+      <div class="sidebar-link" onclick="showSection('analytics',this)"><i class="ti ti-chart-bar"></i> Analytics</div>
+      <div class="sidebar-link" onclick="showSection('payouts',this)"><i class="ti ti-wallet"></i> Payouts</div>
+      <div class="sidebar-section">Store</div>
+      <div class="sidebar-link" onclick="showSection('settings',this)"><i class="ti ti-settings"></i> Store Settings</div>
+      <div class="sidebar-link" onclick="showSection('ai-tools',this)"><i class="ti ti-robot"></i> AI Tools</div>
+      <div style="padding:1.5rem;margin-top:auto">
+        <div style="background:linear-gradient(135deg,var(--obsidian-4),var(--obsidian-5));border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Rating</div>
+          <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:700;color:var(--gold-bright)">4.9 ★</div>
+          <div style="font-size:11px;color:var(--text-muted)">Based on 89 reviews</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="portal-main">
+
+      <!-- DASHBOARD SECTION -->
+      <div id="section-dashboard">
+        <div class="portal-header">
+          <div>
+            <div class="portal-title">Dashboard</div>
+            <div class="portal-subtitle" id="greeting-text">Loading...</div>
+          </div>
+          <a href="seller-products.html#new" class="btn-primary" style="font-size:12px;padding:10px 20px"><span><i class="ti ti-plus"></i> Add Product</span></a>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card reveal">
+            <div class="stat-card-icon" style="background:rgba(201,147,42,.1)"><i class="ti ti-currency-dollar" style="color:var(--gold-bright)"></i></div>
+            <div class="stat-card-value" id="stat-revenue">$0</div>
+            <div class="stat-card-label">Total Revenue</div>
+            <div class="stat-card-change change-up"><i class="ti ti-trending-up"></i> +18% this month</div>
+          </div>
+          <div class="stat-card reveal delay-1">
+            <div class="stat-card-icon" style="background:rgba(46,118,82,.1)"><i class="ti ti-shopping-cart" style="color:var(--emerald-bright)"></i></div>
+            <div class="stat-card-value" id="stat-orders">0</div>
+            <div class="stat-card-label">Total Orders</div>
+            <div class="stat-card-change change-up"><i class="ti ti-trending-up"></i> +24 this week</div>
+          </div>
+          <div class="stat-card reveal delay-2">
+            <div class="stat-card-icon" style="background:rgba(96,165,250,.1)"><i class="ti ti-package" style="color:#60a5fa"></i></div>
+            <div class="stat-card-value" id="stat-products">0</div>
+            <div class="stat-card-label">Products Listed</div>
+            <div class="stat-card-change" style="color:var(--text-muted)">3 pending review</div>
+          </div>
+          <div class="stat-card reveal delay-3">
+            <div class="stat-card-icon" style="background:rgba(212,66,10,.1)"><i class="ti ti-eye" style="color:var(--ember-bright)"></i></div>
+            <div class="stat-card-value" id="stat-views">0</div>
+            <div class="stat-card-label">Store Views</div>
+            <div class="stat-card-change change-up"><i class="ti ti-trending-up"></i> +11% this week</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="chart-card reveal">
+            <div class="chart-title">Revenue (Last 7 Days) <span style="font-size:11px;color:var(--text-muted)">USD</span></div>
+            <div class="mini-chart" id="revenue-chart"></div>
+            <div class="chart-labels" id="revenue-labels"></div>
+          </div>
+          <div class="chart-card reveal delay-1">
+            <div class="chart-title">Orders (Last 7 Days)</div>
+            <div class="mini-chart" id="orders-chart"></div>
+            <div class="chart-labels" id="orders-labels"></div>
+          </div>
+        </div>
+
+        <div class="chart-card reveal">
+          <div class="chart-title">Recent Orders <a href="seller-orders.html" style="font-size:11px;color:var(--gold);font-family:var(--font-heading);font-weight:600">View All →</a></div>
+          <table class="recent-table" id="recent-orders-table">
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="recent-orders-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AI TOOLS SECTION -->
+      <div id="section-ai-tools" style="display:none">
+        <div class="portal-header">
+          <div><div class="portal-title">AI Tools</div><div class="portal-subtitle">Powered by Groq Llama 3.3 + HuggingFace</div></div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:1.5rem">
+          <div class="chart-card">
+            <div class="chart-title"><i class="ti ti-writing" style="color:var(--gold)"></i> AI Listing Writer</div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem">Describe your product in a few words. AI writes the perfect title, description, and tags.</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="form-group"><label class="form-label">Product Keywords</label><input type="text" class="form-input" id="listing-keywords" placeholder='e.g. "black leather wallet, slim, RFID"'/></div>
+              <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="form-group"><label class="form-label">Category</label>
+                  <select class="form-input" id="listing-category">
+                    <option>Fashion</option><option>Electronics</option><option>Beauty</option><option>Home</option><option>Sports</option><option>Books</option><option>Food</option><option>Toys</option><option>Automotive</option><option>Gaming</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Price ($)</label><input type="number" class="form-input" id="listing-price" placeholder="99"/></div>
+              </div>
+              <button class="btn-primary" style="font-size:12px;padding:10px 20px" onclick="generateListing()"><span><i class="ti ti-sparkles"></i> Generate Listing</span></button>
+            </div>
+            <div id="listing-result" style="display:none;margin-top:1.5rem;padding:1.25rem;background:var(--obsidian-4);border:1px solid var(--border);border-radius:var(--radius-md)">
+              <div style="font-family:var(--font-heading);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Generated Listing</div>
+              <div id="listing-title" style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px"></div>
+              <div id="listing-desc" style="font-size:13px;color:var(--text-secondary);line-height:1.7;margin-bottom:10px"></div>
+              <div id="listing-tags" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+              <button class="btn-outline" style="margin-top:1rem;font-size:11px;padding:8px 16px" onclick="useListing()">Use This Listing →</button>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-title"><i class="ti ti-photo-scan" style="color:var(--gold)"></i> Image AI Tagger</div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem">Upload a product image. AI detects category and generates search tags automatically.</p>
+            <div id="image-drop-zone" style="border:2px dashed var(--border);border-radius:var(--radius-lg);padding:3rem;text-align:center;cursor:pointer;transition:all .3s" onclick="document.getElementById('img-upload').click()" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondrop="handleImgDrop(event)">
+              <div style="font-size:2.5rem;margin-bottom:8px">📸</div>
+              <div style="font-size:13px;color:var(--text-muted)">Click or drag & drop product image</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px">JPEG, PNG, WebP — max 10MB</div>
+            </div>
+            <input type="file" id="img-upload" accept="image/*" style="display:none" onchange="handleImgUpload(this)"/>
+            <div id="image-tags-result" style="display:none;margin-top:1rem;padding:1rem;background:var(--obsidian-4);border:1px solid var(--border);border-radius:var(--radius-md)">
+              <div style="font-family:var(--font-heading);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Detected Tags</div>
+              <div style="margin-bottom:8px"><span style="font-size:11px;color:var(--text-muted)">Category: </span><span id="img-category" style="color:var(--gold-bright);font-weight:600"></span></div>
+              <div id="img-tags" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS SECTION -->
+      <div id="section-analytics" style="display:none">
+        <div class="portal-header"><div><div class="portal-title">Analytics</div><div class="portal-subtitle">Your store performance at a glance</div></div></div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-card-value">68%</div><div class="stat-card-label">Conversion Rate</div></div>
+          <div class="stat-card"><div class="stat-card-value">$42</div><div class="stat-card-label">Avg Order Value</div></div>
+          <div class="stat-card"><div class="stat-card-value">3.2</div><div class="stat-card-label">Items per Order</div></div>
+          <div class="stat-card"><div class="stat-card-value">4.9★</div><div class="stat-card-label">Avg Rating</div></div>
+        </div>
+        <div class="chart-card"><div class="chart-title">Top Products by Revenue</div><div id="top-products-list"></div></div>
+      </div>
+
+      <!-- PAYOUTS SECTION -->
+      <div id="section-payouts" style="display:none">
+        <div class="portal-header"><div><div class="portal-title">Payouts</div><div class="portal-subtitle">Track your earnings</div></div></div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-card-value" style="color:var(--emerald-bright)">$2,840</div><div class="stat-card-label">Available Balance</div></div>
+          <div class="stat-card"><div class="stat-card-value">$8,420</div><div class="stat-card-label">Total Earned</div></div>
+          <div class="stat-card"><div class="stat-card-value">$1,200</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card"><div class="stat-card-value">$5,380</div><div class="stat-card-label">Paid Out</div></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Payout History</div>
+          <table class="recent-table">
+            <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Mar 1, 2025</td><td>$1,240.00</td><td>Bank Transfer</td><td><span class="order-status status-delivered">Paid</span></td></tr>
+              <tr><td>Feb 1, 2025</td><td>$980.50</td><td>Bank Transfer</td><td><span class="order-status status-delivered">Paid</span></td></tr>
+              <tr><td>Jan 1, 2025</td><td>$760.00</td><td>Bank Transfer</td><td><span class="order-status status-delivered">Paid</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SETTINGS SECTION -->
+      <div id="section-settings" style="display:none">
+        <div class="portal-header"><div><div class="portal-title">Store Settings</div></div></div>
+        <div class="checkout-section" style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;max-width:600px">
+          <div style="font-family:var(--font-heading);font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem">Store Profile</div>
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="form-group"><label class="form-label">Store Name</label><input type="text" class="form-input" id="store-name-input" placeholder="Your Store Name"/></div>
+            <div class="form-group"><label class="form-label">Store Description</label><textarea class="form-input" rows="3" placeholder="What do you sell?" style="resize:vertical"></textarea></div>
+            <div class="form-group"><label class="form-label">Return Policy</label><textarea class="form-input" rows="2" placeholder="e.g. 30-day returns accepted" style="resize:vertical"></textarea></div>
+            <div class="form-group"><label class="form-label">Support Email</label><input type="email" class="form-input" placeholder="support@yourstore.com"/></div>
+            <button class="btn-primary" style="width:fit-content;font-size:12px;padding:10px 24px"><span>Save Settings</span></button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script type="module">
+    import { initCursor, initScrollReveal, showToast, animateCounter } from '../js/core/utils.js';
+    import { onAuthChange } from '../js/core/auth.js';
+    import { generateListing as aiGenerateListing } from '../js/ai/groq.js';
+    import { tagProductImage } from '../js/ai/huggingface.js';
+    import { uploadImage, validateImage } from '../js/ai/imgbb.js';
+    initCursor();
+
+    const MOCK_STATS = { revenue: 8420, orders: 147, products: 24, views: 3280 };
+    const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const REV_DATA = [340,520,280,680,450,920,610];
+    const ORD_DATA = [8,14,6,18,11,22,16];
+
+    function initDashboard() {
+      document.getElementById('greeting-text').textContent = `Welcome back! Here's your store overview.`;
+      ['revenue','orders','products','views'].forEach(key => {
+        const el = document.getElementById('stat-'+key);
+        if(el) animateCounter(el, MOCK_STATS[key], 1500);
+      });
+      document.querySelector('[data-stat="revenue"]');
+      document.getElementById('stat-revenue').textContent = '';
+      setTimeout(()=>{ document.getElementById('stat-revenue').textContent = '$8,420'; }, 100);
+
+      // Charts
+      const maxRev = Math.max(...REV_DATA);
+      document.getElementById('revenue-chart').innerHTML = REV_DATA.map((v,i)=>`<div class="bar" style="height:${(v/maxRev)*100}%" title="$${v}"></div>`).join('');
+      document.getElementById('revenue-labels').innerHTML = DAYS.map(d=>`<div class="chart-label">${d}</div>`).join('');
+      const maxOrd = Math.max(...ORD_DATA);
+      document.getElementById('orders-chart').innerHTML = ORD_DATA.map((v,i)=>`<div class="bar" style="height:${(v/maxOrd)*100}%;background:linear-gradient(to top,var(--emerald),var(--emerald-bright))" title="${v} orders"></div>`).join('');
+      document.getElementById('orders-labels').innerHTML = DAYS.map(d=>`<div class="chart-label">${d}</div>`).join('');
+
+      // Recent orders
+      const orders = [
+        {id:'#N001',customer:'Alex D.',items:2,total:'$189.00',status:'delivered',date:'Mar 15'},
+        {id:'#N002',customer:'Mira K.',items:1,total:'$95.00',status:'shipped',date:'Mar 14'},
+        {id:'#N003',customer:'Zen L.',items:3,total:'$420.00',status:'processing',date:'Mar 14'},
+        {id:'#N004',customer:'Sam R.',items:1,total:'$54.00',status:'pending',date:'Mar 13'},
+        {id:'#N005',customer:'Nova T.',items:2,total:'$278.00',status:'delivered',date:'Mar 12'},
+      ];
+      document.getElementById('recent-orders-body').innerHTML = orders.map(o=>`
+        <tr><td style="font-family:var(--font-heading);color:var(--text-primary)">${o.id}</td><td>${o.customer}</td><td>${o.items} item${o.items>1?'s':''}</td><td style="color:var(--gold-bright);font-weight:600">${o.total}</td>
+        <td><span class="order-status status-${o.status}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span></td><td>${o.date}</td></tr>`).join('');
+
+      initScrollReveal();
+    }
+
+    window.showSection = (id, el) => {
+      document.querySelectorAll('[id^="section-"]').forEach(s=>s.style.display='none');
+      document.getElementById('section-'+id).style.display = 'block';
+      document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+      el?.classList.add('active');
+    };
+
+    // ---- AI Listing Generator ----
+    window.generateListing = async () => {
+      const keywords = document.getElementById('listing-keywords').value.trim();
+      const category = document.getElementById('listing-category').value;
+      const price = document.getElementById('listing-price').value;
+      if (!keywords) { showToast('Enter some product keywords', 'error'); return; }
+      showToast('Generating listing... 🔥', 'info');
+      const result = await aiGenerateListing(keywords, category, price || 50);
+      if (result) {
+        document.getElementById('listing-result').style.display = 'block';
+        document.getElementById('listing-title').textContent = result.title;
+        document.getElementById('listing-desc').textContent = result.description;
+        document.getElementById('listing-tags').innerHTML = (result.tags||[]).map(t=>`<span style="padding:3px 10px;background:var(--glass-gold);border:1px solid var(--border-bright);border-radius:100px;font-size:11px;color:var(--gold)">#${t}</span>`).join('');
+        showToast('Listing generated! ✦', 'success');
+      } else { showToast('Generation failed. Try again.', 'error'); }
+    };
+    window.useListing = () => { window.location.href = 'seller-products.html#new'; };
+
+    // ---- Image Tagger ----
+    window.handleImgUpload = async (input) => {
+      const file = input.files[0]; if (!file) return;
+      const valid = validateImage(file);
+      if (!valid.valid) { showToast(valid.error, 'error'); return; }
+      showToast('Analyzing image with AI...', 'info');
+      document.getElementById('image-drop-zone').innerHTML = `<div style="font-size:2.5rem">🔍</div><div style="font-size:13px;color:var(--gold)">Analyzing...</div>`;
+      const { category, tags } = await tagProductImage(URL.createObjectURL(file));
+      document.getElementById('image-tags-result').style.display = 'block';
+      document.getElementById('img-category').textContent = category;
+      document.getElementById('img-tags').innerHTML = tags.map(t=>`<span style="padding:3px 10px;background:var(--glass-gold);border:1px solid var(--border-bright);border-radius:100px;font-size:11px;color:var(--gold)">#${t}</span>`).join('');
+      document.getElementById('image-drop-zone').innerHTML = `<img src="${URL.createObjectURL(file)}" style="width:100%;max-height:150px;object-fit:cover;border-radius:var(--radius-md)"/>`;
+      showToast(`Category: ${category} detected! ✦`, 'success');
+    };
+    window.handleImgDrop = (e) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file) { const input = document.getElementById('img-upload'); const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; handleImgUpload(input); }
+    };
+
+    onAuthChange(user => {
+      if (user) document.getElementById('nav-user-avatar').textContent = user.displayName?.[0]?.toUpperCase()||'S';
+    });
+
+    initDashboard();
+  </script>
+</body>
+</html>

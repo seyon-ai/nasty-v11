@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="description" content="NASTY — Shop everything. AI-powered search. Mythic marketplace."/>
+  <title>Shop — NASTY Marketplace</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>"/>
+  <link rel="stylesheet" href="../css/global.css"/>
+  <link rel="stylesheet" href="../css/animations.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <style>
+    /* ---- PAGE ---- */
+    .shop-page { padding-top: 70px; min-height: 100vh; }
+
+    /* ---- TOP BAR (search + breadcrumb) ---- */
+    .shop-topbar {
+      background: var(--obsidian-2);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 0;
+      position: sticky;
+      top: 70px;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-heading);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .breadcrumb a { color: var(--text-muted); transition: color .2s; }
+    .breadcrumb a:hover { color: var(--gold-bright); }
+    .breadcrumb .sep { opacity: .4; }
+    .breadcrumb .current { color: var(--text-secondary); }
+
+    /* AI search */
+    .ai-search-bar {
+      flex: 1;
+      min-width: 260px;
+      max-width: 560px;
+      position: relative;
+    }
+    .ai-search-input {
+      width: 100%;
+      padding: 10px 48px 10px 40px;
+      background: var(--obsidian-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 13px;
+      transition: all .25s;
+      font-family: var(--font-body);
+    }
+    .ai-search-input::placeholder { color: var(--text-muted); }
+    .ai-search-input:focus {
+      border-color: var(--gold);
+      background: var(--obsidian-4);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(201,147,42,.08);
+    }
+    .search-icon-left {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 15px;
+      pointer-events: none;
+    }
+    .search-ai-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--obsidian);
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+    }
+    .search-ai-btn:hover { background: linear-gradient(135deg, var(--gold), var(--gold-shimmer)); }
+    .search-ai-hint {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0; right: 0;
+      background: var(--obsidian-3);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: none;
+      z-index: 10;
+      line-height: 1.5;
+    }
+    .search-ai-hint.show { display: block; }
+    .search-ai-hint strong { color: var(--gold-bright); }
+
+    /* View + sort controls */
+    .shop-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .sort-select {
+      padding: 8px 14px;
+      background: var(--obsidian-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .sort-select:focus { outline: none; border-color: var(--gold); }
+    .sort-select option { background: var(--obsidian-2); }
+    .view-toggle {
+      display: flex;
+      background: var(--obsidian-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .view-btn {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all .2s;
+      background: none;
+      border: none;
+    }
+    .view-btn.active { background: var(--glass-gold); color: var(--gold-bright); }
+    .view-btn:hover:not(.active) { color: var(--text-primary); }
+
+    /* ---- FILTER STRIP (horizontal, below topbar) ---- */
+    .filter-strip {
+      background: var(--obsidian);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 0;
+      position: sticky;
+      top: calc(70px + 57px);
+      z-index: 99;
+    }
+    .filter-strip-inner {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .filter-strip-inner::-webkit-scrollbar { display: none; }
+    .filter-label {
+      font-family: var(--font-heading);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      padding-right: .5rem;
+      border-right: 1px solid var(--border);
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 13px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all .18s;
+      background: transparent;
+      font-family: var(--font-body);
+    }
+    .filter-chip:hover { border-color: var(--gold-deep); color: var(--text-primary); }
+    .filter-chip.active { border-color: var(--gold); color: var(--gold-bright); background: rgba(201,147,42,.07); }
+    .filter-chip .chip-icon { font-size: 13px; }
+    .filter-divider { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+    /* Price range inline */
+    .price-range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .price-mini-input {
+      width: 72px;
+      padding: 5px 8px;
+      background: var(--obsidian-3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-family: var(--font-body);
+      transition: border-color .2s;
+    }
+    .price-mini-input:focus { outline: none; border-color: var(--gold); }
+    .price-mini-input::placeholder { color: var(--text-muted); }
+    .price-apply-btn {
+      padding: 5px 10px;
+      background: var(--gold-deep);
+      border: none;
+      border-radius: 6px;
+      color: var(--obsidian);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s;
+      font-family: var(--font-heading);
+    }
+    .price-apply-btn:hover { background: var(--gold); }
+
+    /* ---- ACTIVE FILTERS ROW ---- */
+    .active-filters-row {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: .625rem 0;
+      flex-wrap: wrap;
+    }
+    .active-filters-row.show { display: flex; }
+    .active-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px 3px 12px;
+      background: rgba(201,147,42,.1);
+      border: 1px solid var(--border-bright);
+      border-radius: 100px;
+      font-size: 11px;
+      color: var(--gold-bright);
+    }
+    .active-filter-pill button {
+      width: 16px; height: 16px;
+      background: none; border: none;
+      color: var(--gold);
+      cursor: pointer; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1; padding: 0;
+    }
+    .clear-all-btn {
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      transition: color .2s;
+    }
+    .clear-all-btn:hover { color: var(--ember-bright); }
+
+    /* ---- MAIN LAYOUT ---- */
+    .shop-main {
+      padding: 2rem 0 5rem;
+    }
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+      gap: .75rem;
+    }
+    .results-info {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .results-info strong { color: var(--text-primary); }
+
+    /* ---- PRODUCT GRID ---- */
+    #products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(256px, 1fr));
+      gap: 1.5rem;
+    }
+    #products-grid.list-view {
+      grid-template-columns: 1fr;
+    }
+    #products-grid.list-view .product-card {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      align-items: stretch;
+    }
+    #products-grid.list-view .product-card-image {
+      aspect-ratio: unset;
+      height: 150px;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
+    #products-grid.list-view .product-card-footer {
+      display: flex;
+      align-items: flex-end;
+      padding: 1.25rem;
+      border-top: none;
+      border-left: 1px solid var(--border);
+    }
+
+    /* ---- EMPTY STATE ---- */
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 6rem 2rem;
+    }
+    .empty-icon { font-size: 4rem; margin-bottom: 1.5rem; filter: grayscale(.5); }
+    .empty-title { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .empty-sub { font-size: 13px; color: var(--text-muted); }
+
+    /* ---- SKELETON ---- */
+    .skeleton-card {
+      background: var(--obsidian-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .skeleton-img {
+      aspect-ratio: 4/3;
+      background: linear-gradient(90deg, var(--obsidian-4) 25%, var(--obsidian-5) 50%, var(--obsidian-4) 75%);
+      background-size: 200% 100%;
+      animation: shimmerBg 1.4s ease infinite;
+    }
+    @keyframes shimmerBg { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skeleton-line {
+      height: 10px;
+      background: var(--obsidian-4);
+      border-radius: 4px;
+      margin: 12px 16px;
+      animation: shimmerBg 1.4s ease infinite;
+    }
+    .skeleton-line.short { width: 40%; }
+    .skeleton-line.medium { width: 70%; }
+
+    /* ---- LOAD MORE ---- */
+    .load-more-wrap { text-align: center; margin-top: 3rem; }
+
+    /* ---- DRAGON CHAT ---- */
+    .dragon-chat { position: fixed; bottom: 2rem; right: 2rem; z-index: 5000; }
+
+    /* ---- EMPTY PRODUCT STATE ---- */
+    .no-products-cta {
+      grid-column: 1 / -1;
+      background: var(--obsidian-3);
+      border: 1px dashed var(--border-bright);
+      border-radius: var(--radius-xl);
+      padding: 5rem 2rem;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .shop-controls { display: none; }
+      .topbar-inner { gap: .75rem; }
+      #products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+      .filter-label { display: none; }
+    }
+    @media (max-width: 500px) {
+      #products-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor"></div>
+  <div class="cursor-ring"></div>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar scrolled" id="navbar">
+    <div class="container navbar-inner">
+      <a href="../index.html" class="navbar-logo">NASTY</a>
+
+      <ul class="navbar-nav" id="nav-links">
+        <li><a href="shop.html" style="color:var(--gold-bright)">Shop</a></li>
+        <li><a href="cart.html">Cart</a></li>
+        <li><a href="account.html">Account</a></li>
+      </ul>
+
+      <div class="navbar-actions">
+        <a href="cart.html" class="nav-icon-btn" title="Cart">
+          <i class="ti ti-shopping-bag"></i>
+          <span class="nav-badge" id="cart-badge" style="display:none">0</span>
+        </a>
+        <a href="account.html#wishlist" class="nav-icon-btn" title="Wishlist">
+          <i class="ti ti-heart"></i>
+        </a>
+        <!-- Auth state populated by JS -->
+        <a href="login.html" class="btn-outline" id="nav-login-btn" style="padding:8px 18px;font-size:11px">Sign In</a>
+        <button class="nav-icon-btn hidden" id="nav-user-btn" onclick="window.location.href='account.html'" title="My Account">
+          <span id="nav-user-avatar" style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--gold)"></span>
+        </button>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="shop-page">
+
+    <!-- ============ TOP BAR ============ -->
+    <div class="shop-topbar">
+      <div class="container topbar-inner">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="sep">/</span>
+          <span class="current" id="bc-current">All Products</span>
+        </div>
+
+        <!-- AI Search -->
+        <div class="ai-search-bar">
+          <i class="ti ti-search search-icon-left"></i>
+          <input
+            type="text"
+            class="ai-search-input"
+            id="search-input"
+            placeholder='Search or try "dark jacket under $200"…'
+            autocomplete="off"
+          />
+          <button class="search-ai-btn" id="search-btn" title="AI Search">
+            <i class="ti ti-sparkles"></i>
+          </button>
+          <div class="search-ai-hint" id="search-hint"></div>
+        </div>
+
+        <!-- Sort + View -->
+        <div class="shop-controls">
+          <select class="sort-select" id="sort-select" onchange="applySort(this.value)">
+            <option value="newest">Newest</option>
+            <option value="price_asc">Price ↑</option>
+            <option value="price_desc">Price ↓</option>
+            <option value="rating">Top Rated</option>
+          </select>
+          <div class="view-toggle">
+            <button class="view-btn active" id="btn-grid" onclick="setView('grid')" title="Grid"><i class="ti ti-layout-grid"></i></button>
+            <button class="view-btn" id="btn-list" onclick="setView('list')" title="List"><i class="ti ti-list"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ FILTER STRIP ============ -->
+    <div class="filter-strip">
+      <div class="container filter-strip-inner">
+        <span class="filter-label">Filter</span>
+
+        <!-- Categories -->
+        <button class="filter-chip active" data-filter="cat" data-value="all" onclick="setCat('all',this)">
+          <span class="chip-icon">🌐</span> All
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Fashion" onclick="setCat('Fashion',this)">
+          <span class="chip-icon">👗</span> Fashion
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Electronics" onclick="setCat('Electronics',this)">
+          <span class="chip-icon">📱</span> Electronics
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Beauty" onclick="setCat('Beauty',this)">
+          <span class="chip-icon">💄</span> Beauty
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Home" onclick="setCat('Home',this)">
+          <span class="chip-icon">🏠</span> Home
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Sports" onclick="setCat('Sports',this)">
+          <span class="chip-icon">⚽</span> Sports
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Books" onclick="setCat('Books',this)">
+          <span class="chip-icon">📚</span> Books
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Gaming" onclick="setCat('Gaming',this)">
+          <span class="chip-icon">🎮</span> Gaming
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Food" onclick="setCat('Food',this)">
+          <span class="chip-icon">🍕</span> Food
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Toys" onclick="setCat('Toys',this)">
+          <span class="chip-icon">🧸</span> Toys
+        </button>
+        <button class="filter-chip" data-filter="cat" data-value="Automotive" onclick="setCat('Automotive',this)">
+          <span class="chip-icon">🚗</span> Auto
+        </button>
+
+        <div class="filter-divider"></div>
+
+        <!-- Rating -->
+        <button class="filter-chip" data-filter="rating" onclick="toggleRating(this)">
+          <i class="ti ti-star"></i> 4★ & up
+        </button>
+
+        <!-- On sale -->
+        <button class="filter-chip" data-filter="sale" onclick="toggleSale(this)">
+          <i class="ti ti-tag"></i> On Sale
+        </button>
+
+        <!-- New only -->
+        <button class="filter-chip" data-filter="new" onclick="toggleNew(this)">
+          <i class="ti ti-sparkles"></i> New
+        </button>
+
+        <div class="filter-divider"></div>
+
+        <!-- Price range -->
+        <div class="price-range-wrap">
+          <input type="number" class="price-mini-input" id="price-min" placeholder="$min" min="0"/>
+          <span style="color:var(--text-muted);font-size:12px">–</span>
+          <input type="number" class="price-mini-input" id="price-max" placeholder="$max" min="0"/>
+          <button class="price-apply-btn" onclick="applyPrice()">Go</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MAIN ============ -->
+    <div class="shop-main">
+      <div class="container">
+
+        <!-- Active filter pills -->
+        <div class="active-filters-row" id="active-filters-row">
+          <div id="active-filter-pills"></div>
+          <button class="clear-all-btn" onclick="clearAll()">✕ Clear all</button>
+        </div>
+
+        <!-- Results header -->
+        <div class="results-header">
+          <div class="results-info" id="results-info">Loading products…</div>
+        </div>
+
+        <!-- Products grid -->
+        <div id="products-grid">
+          <!-- Skeleton placeholders -->
+          <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+          <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+        </div>
+
+        <!-- Load more -->
+        <div class="load-more-wrap" id="load-more-wrap" style="display:none">
+          <button class="btn-outline" id="load-more-btn" onclick="loadMore()">
+            Load More Products
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DRAGON CHAT ============ -->
+  <div class="dragon-chat">
+    <div class="dragon-chat-window hidden" id="chat-window">
+      <div class="chat-header">
+        <div class="chat-header-avatar">🐉</div>
+        <div class="chat-header-info">
+          <h4>NAST — Shop AI</h4>
+          <p>● Find anything with AI</p>
+        </div>
+        <button onclick="document.getElementById('chat-window').classList.add('hidden')" style="margin-left:auto;color:var(--text-muted);background:none;border:none;cursor:pointer;font-size:1.1rem"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="message ai">I can help you find exactly what you're looking for. Describe it in any way — I'll search for it. 🔥</div>
+      </div>
+      <div class="chat-input-wrap">
+        <input class="chat-input" id="chat-input" placeholder="Describe what you need…" onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="chat-send-btn" onclick="sendChat()"><i class="ti ti-send"></i></button>
+      </div>
+    </div>
+    <button class="dragon-chat-btn" onclick="document.getElementById('chat-window').classList.toggle('hidden')" title="AI Shopping Assistant">🐉</button>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script type="module">
+    import { initCursor, initNavbar, cart, showToast, debounce } from '../js/core/utils.js';
+    import { onAuthChange } from '../js/core/auth.js';
+    import { parseSearchIntent, dragonChat } from '../js/ai/groq.js';
+    const _fbM = await import('../js/core/firebase.js').catch(()=>({}));
+    const { db } = _fbM;
+    import {
+      collection, getDocs, query, where,
+      orderBy, limit, startAfter
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    initCursor();
+    initNavbar();
+    cart.updateBadge();
+
+    // ============ STATE ============
+    const PAGE_SIZE = 12;
+    let state = {
+      category: null,
+      rating: false,
+      sale: false,
+      isNew: false,
+      minPrice: null,
+      maxPrice: null,
+      sort: 'newest',
+      searchQuery: ''
+    };
+    let lastDoc = null;
+    let hasMore = false;
+    let loading = false;
+    let currentView = 'grid';
+    const wishlist = new Set(JSON.parse(localStorage.getItem('nasty_wishlist') || '[]'));
+
+    // ============ FIRESTORE LOAD ============
+    async function loadProducts(reset = true) {
+      if (loading) return;
+      loading = true;
+
+      const grid = document.getElementById('products-grid');
+      if (reset) {
+        lastDoc = null;
+        grid.innerHTML = skeletons(PAGE_SIZE);
+      }
+
+      try {
+        const constraints = [where('status', '==', 'active')];
+        if (state.category) constraints.push(where('category', '==', state.category));
+        if (state.sale) constraints.push(where('isSale', '==', true));
+        if (state.sort === 'price_asc') constraints.push(orderBy('price', 'asc'));
+        else if (state.sort === 'price_desc') constraints.push(orderBy('price', 'desc'));
+        else if (state.sort === 'rating') constraints.push(orderBy('rating', 'desc'));
+        else constraints.push(orderBy('createdAt', 'desc'));
+        constraints.push(limit(PAGE_SIZE));
+        if (!reset && lastDoc) constraints.push(startAfter(lastDoc));
+
+        const q = query(collection(db, 'products'), ...constraints);
+        const snap = await getDocs(q);
+
+        let products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        lastDoc = snap.docs[snap.docs.length - 1] || null;
+        hasMore = snap.docs.length === PAGE_SIZE;
+
+        // Client-side filters not supported by Firestore composite index
+        if (state.rating) products = products.filter(p => (p.rating || 0) >= 4);
+        if (state.isNew) products = products.filter(p => p.isNew);
+        if (state.minPrice != null) products = products.filter(p => p.price >= state.minPrice);
+        if (state.maxPrice != null) products = products.filter(p => p.price <= state.maxPrice);
+
+        if (reset) grid.innerHTML = '';
+
+        if (!products.length && reset) {
+          grid.innerHTML = emptyState();
+        } else {
+          products.forEach(p => grid.insertAdjacentHTML('beforeend', productCard(p)));
+        }
+
+        const total = grid.querySelectorAll('.product-card').length;
+        document.getElementById('results-info').innerHTML =
+          `Showing <strong>${total}</strong> product${total !== 1 ? 's' : ''}${state.category ? ` in <strong>${state.category}</strong>` : ''}`;
+
+        const lmw = document.getElementById('load-more-wrap');
+        lmw.style.display = hasMore ? 'block' : 'none';
+
+      } catch (err) {
+        console.error('Firestore load error:', err);
+        if (reset) {
+          grid.innerHTML = `
+            <div class="no-products-cta">
+              <div style="font-size:3rem;margin-bottom:1rem">🔧</div>
+              <div style="font-family:var(--font-heading);font-size:14px;color:var(--text-primary);margin-bottom:8px">Firebase not configured yet</div>
+              <div style="font-size:13px;color:var(--text-muted);max-width:400px;margin:0 auto;line-height:1.7">
+                Add your Firebase config to <code style="background:var(--obsidian-4);padding:2px 8px;border-radius:4px;color:var(--gold)">js/core/firebase.js</code> 
+                and products added by sellers will appear here automatically.
+              </div>
+            </div>`;
+          document.getElementById('results-info').textContent = 'Connect Firebase to load real products';
+        }
+      } finally {
+        loading = false;
+      }
+    }
+
+    // ============ PRODUCT CARD ============
+    function productCard(p) {
+      const inWish = wishlist.has(p.id);
+      const discount = p.originalPrice ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
+      const img = p.image || p.images?.[0] || '';
+
+      return `
+        <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'">
+          <div class="product-card-image">
+            ${img
+              ? `<img src="${img}" alt="${p.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-muted)>📦</div>'"/>`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">📦</div>`
+            }
+            ${discount ? `<span class="product-card-badge sale">-${discount}%</span>` : ''}
+            ${p.isNew ? `<span class="product-card-badge new" style="${discount?'top:44px':''}">NEW</span>` : ''}
+            <div class="product-card-actions">
+              <button class="card-action-btn ${inWish ? 'active' : ''}"
+                onclick="event.stopPropagation();toggleWish('${p.id}','${(p.title||'').replace(/'/g,'')}')"
+                title="Wishlist"><i class="ti ti-heart"></i></button>
+            </div>
+          </div>
+          <div class="product-card-body">
+            <div class="product-card-category">${p.category || ''}</div>
+            <div class="product-card-title">${p.title}</div>
+            <div class="product-card-price">
+              <span class="price-current">$${Number(p.price).toFixed(2)}</span>
+              ${p.originalPrice ? `<span class="price-original">$${Number(p.originalPrice).toFixed(2)}</span>` : ''}
+            </div>
+            ${p.rating ? `
+            <div class="product-card-rating">
+              <span class="stars">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5 - Math.round(p.rating))}</span>
+              <span>${p.rating} (${p.reviews || 0})</span>
+            </div>` : ''}
+          </div>
+          <div class="product-card-footer">
+            <button class="add-to-cart-btn"
+              onclick="event.stopPropagation();addToCart(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+              Add to Cart
+            </button>
+          </div>
+        </div>`;
+    }
+
+    // ============ HELPERS ============
+    function skeletons(n) {
+      return Array(n).fill(0).map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line short"></div>
+        </div>`).join('');
+    }
+
+    function emptyState() {
+      return `
+        <div class="empty-state">
+          <div class="empty-icon">🔮</div>
+          <div class="empty-title">No products found</div>
+          <div class="empty-sub">Try different filters or search something else</div>
+        </div>`;
+    }
+
+    function updateActivePills() {
+      const pills = [];
+      if (state.category) pills.push({ label: state.category, remove: () => { state.category = null; setCat('all', document.querySelector('[data-value="all"]')); } });
+      if (state.rating) pills.push({ label: '4★ & up', remove: () => { state.rating = false; refreshFiltersAndLoad(); } });
+      if (state.sale) pills.push({ label: 'On Sale', remove: () => { state.sale = false; refreshFiltersAndLoad(); } });
+      if (state.isNew) pills.push({ label: 'New', remove: () => { state.isNew = false; refreshFiltersAndLoad(); } });
+      if (state.minPrice != null || state.maxPrice != null) {
+        pills.push({ label: `$${state.minPrice || 0} – $${state.maxPrice || '∞'}`, remove: () => { state.minPrice = null; state.maxPrice = null; document.getElementById('price-min').value = ''; document.getElementById('price-max').value = ''; refreshFiltersAndLoad(); } });
+      }
+
+      const row = document.getElementById('active-filters-row');
+      const pillContainer = document.getElementById('active-filter-pills');
+
+      if (pills.length) {
+        row.classList.add('show');
+        pillContainer.innerHTML = pills.map((p, i) => `
+          <span class="active-filter-pill">
+            ${p.label}
+            <button onclick="activePillRemove(${i})">×</button>
+          </span>`).join('');
+        window._activePills = pills;
+      } else {
+        row.classList.remove('show');
+        pillContainer.innerHTML = '';
+      }
+
+      // Update breadcrumb
+      document.getElementById('bc-current').textContent = state.category || (state.searchQuery ? `"${state.searchQuery}"` : 'All Products');
+    }
+
+    window._activePills = [];
+    window.activePillRemove = (i) => { window._activePills[i]?.remove(); };
+
+    function refreshFiltersAndLoad() {
+      updateActivePills();
+      loadProducts(true);
+    }
+
+    // ============ FILTER HANDLERS ============
+    window.setCat = (val, btn) => {
+      state.category = val === 'all' ? null : val;
+      document.querySelectorAll('[data-filter="cat"]').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      refreshFiltersAndLoad();
+    };
+
+    window.toggleRating = (btn) => {
+      state.rating = !state.rating;
+      btn.classList.toggle('active', state.rating);
+      refreshFiltersAndLoad();
+    };
+
+    window.toggleSale = (btn) => {
+      state.sale = !state.sale;
+      btn.classList.toggle('active', state.sale);
+      refreshFiltersAndLoad();
+    };
+
+    window.toggleNew = (btn) => {
+      state.isNew = !state.isNew;
+      btn.classList.toggle('active', state.isNew);
+      refreshFiltersAndLoad();
+    };
+
+    window.applyPrice = () => {
+      const min = parseFloat(document.getElementById('price-min').value);
+      const max = parseFloat(document.getElementById('price-max').value);
+      state.minPrice = isNaN(min) ? null : min;
+      state.maxPrice = isNaN(max) ? null : max;
+      refreshFiltersAndLoad();
+    };
+
+    window.applySort = (val) => {
+      state.sort = val;
+      loadProducts(true);
+    };
+
+    window.clearAll = () => {
+      state = { category: null, rating: false, sale: false, isNew: false, minPrice: null, maxPrice: null, sort: 'newest', searchQuery: '' };
+      document.getElementById('price-min').value = '';
+      document.getElementById('price-max').value = '';
+      document.getElementById('sort-select').value = 'newest';
+      document.getElementById('search-input').value = '';
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelector('[data-value="all"]').classList.add('active');
+      refreshFiltersAndLoad();
+    };
+
+    window.setView = (v) => {
+      currentView = v;
+      document.getElementById('products-grid').classList.toggle('list-view', v === 'list');
+      document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+      document.getElementById('btn-list').classList.toggle('active', v === 'list');
+    };
+
+    window.loadMore = async () => {
+      const btn = document.getElementById('load-more-btn');
+      btn.textContent = 'Loading…';
+      btn.disabled = true;
+      await loadProducts(false);
+      btn.textContent = 'Load More Products';
+      btn.disabled = false;
+    };
+
+    // ============ CART + WISHLIST ============
+    window.addToCart = (p) => cart.add(p);
+
+    window.toggleWish = (id, title) => {
+      if (wishlist.has(id)) wishlist.delete(id);
+      else wishlist.add(id);
+      localStorage.setItem('nasty_wishlist', JSON.stringify([...wishlist]));
+      // Update button state
+      document.querySelectorAll(`[onclick*="toggleWish('${id}'"]`).forEach(btn => {
+        btn.classList.toggle('active', wishlist.has(id));
+      });
+      showToast(wishlist.has(id) ? `${title} added to wishlist ♥` : 'Removed from wishlist', 'info');
+    };
+
+    // ============ AI SEARCH ============
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const searchHint = document.getElementById('search-hint');
+
+    async function handleSearch(q) {
+      if (!q?.trim()) { loadProducts(true); return; }
+      state.searchQuery = q;
+      searchBtn.innerHTML = '<span class="spin">↻</span>';
+
+      const intent = await parseSearchIntent(q);
+      searchBtn.innerHTML = '<i class="ti ti-sparkles"></i>';
+
+      if (intent.category && intent.category !== 'All') {
+        state.category = intent.category;
+        document.querySelectorAll('[data-filter="cat"]').forEach(c => c.classList.remove('active'));
+        const catBtn = document.querySelector(`[data-value="${intent.category}"]`);
+        if (catBtn) catBtn.classList.add('active');
+      }
+      if (intent.priceRange?.max) state.maxPrice = intent.priceRange.max;
+      if (intent.priceRange?.min) state.minPrice = intent.priceRange.min;
+      if (intent.sortBy && intent.sortBy !== 'relevance') {
+        state.sort = intent.sortBy;
+        document.getElementById('sort-select').value = intent.sortBy;
+      }
+
+      searchHint.innerHTML = `🤖 AI understood: <strong>${intent.category || 'All'}</strong>${intent.priceRange?.max ? `, under <strong>$${intent.priceRange.max}</strong>` : ''}`;
+      searchHint.classList.add('show');
+      setTimeout(() => searchHint.classList.remove('show'), 4000);
+
+      refreshFiltersAndLoad();
+    }
+
+    searchBtn.addEventListener('click', () => handleSearch(searchInput.value));
+    searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSearch(searchInput.value); });
+    searchInput.addEventListener('input', debounce(e => {
+      if (!e.target.value) { state.searchQuery = ''; loadProducts(true); }
+    }, 500));
+
+    // Check URL params
+    const urlParams = new URLSearchParams(location.search);
+    const urlCat = urlParams.get('cat');
+    const urlQ = urlParams.get('q');
+    if (urlCat) {
+      state.category = urlCat;
+      const btn = document.querySelector(`[data-value="${urlCat}"]`);
+      if (btn) { document.querySelectorAll('[data-filter="cat"]').forEach(c => c.classList.remove('active')); btn.classList.add('active'); }
+    }
+    if (urlQ) {
+      searchInput.value = urlQ;
+      handleSearch(urlQ);
+    } else {
+      loadProducts(true);
+    }
+
+    // ============ DRAGON CHAT ============
+    const chatHistory = [];
+    window.sendChat = async () => {
+      const input = document.getElementById('chat-input');
+      const msgs = document.getElementById('chat-messages');
+      const text = input.value.trim();
+      if (!text) return;
+      msgs.innerHTML += `<div class="message user">${text}</div>`;
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+      const tid = 'typing' + Date.now();
+      msgs.innerHTML += `<div class="typing-indicator" id="${tid}"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+      chatHistory.push({ role: 'user', content: text });
+      const r = await dragonChat(chatHistory);
+      document.getElementById(tid)?.remove();
+      const reply = r.success ? r.content : 'The flames flicker… try again.';
+      chatHistory.push({ role: 'assistant', content: reply });
+      msgs.innerHTML += `<div class="message ai">${reply}</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+    };
+
+    // ============ NAV AUTH ============
+    onAuthChange(user => {
+      const lb = document.getElementById('nav-login-btn');
+      const ub = document.getElementById('nav-user-btn');
+      if (user) {
+        lb.classList.add('hidden');
+        ub.classList.remove('hidden');
+        document.getElementById('nav-user-avatar').textContent = user.displayName?.[0]?.toUpperCase() || '?';
+      } else {
+        lb.classList.remove('hidden');
+        ub.classList.add('hidden');
+      }
+    });
+
+    // ============ HAMBURGER ============
+    document.getElementById('hamburger').addEventListener('click', function () {
+      this.classList.toggle('open');
+      document.getElementById('nav-links').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

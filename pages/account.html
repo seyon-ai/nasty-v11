@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Account — NASTY</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>"/>
+  <link rel="stylesheet" href="../css/global.css"/><link rel="stylesheet" href="../css/animations.css"/><link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <style>
+    .account-page{padding:7rem 0 4rem;min-height:100vh}
+    .account-layout{display:grid;grid-template-columns:280px 1fr;gap:2.5rem;align-items:start}
+    .account-sidebar{position:sticky;top:90px}
+    .profile-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;text-align:center;margin-bottom:1rem}
+    .avatar-wrap{position:relative;width:80px;height:80px;margin:0 auto 1rem}
+    .avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--gold-deep),var(--gold));display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--obsidian);border:3px solid var(--gold)}
+    .avatar-edit{position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--obsidian);cursor:pointer}
+    .profile-name{font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+    .profile-email{font-size:12px;color:var(--text-muted);margin-bottom:1rem}
+    .profile-stats{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden}
+    .profile-stat{flex:1;padding:.75rem;text-align:center;border-right:1px solid var(--border)}
+    .profile-stat:last-child{border-right:none}
+    .profile-stat-val{font-family:var(--font-heading);font-size:1.1rem;font-weight:700;color:var(--gold-bright)}
+    .profile-stat-label{font-size:10px;color:var(--text-muted);letter-spacing:.05em}
+    .account-nav{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden}
+    .account-nav-item{display:flex;align-items:center;gap:12px;padding:1rem 1.25rem;font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .2s;border-left:2px solid transparent;border-bottom:1px solid var(--border)}
+    .account-nav-item:last-child{border-bottom:none}
+    .account-nav-item:hover{color:var(--text-primary);background:rgba(201,147,42,.04);border-left-color:var(--gold-deep)}
+    .account-nav-item.active{color:var(--gold-bright);background:rgba(201,147,42,.07);border-left-color:var(--gold)}
+    .account-nav-item i{font-size:1rem;width:18px}
+    .section-panel{display:none}
+    .section-panel.active{display:block}
+    .section-heading{font-family:var(--font-heading);font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem}
+    .order-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;transition:all .2s}
+    .order-card:hover{border-color:var(--border-bright)}
+    .order-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+    .order-id{font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--gold-bright)}
+    .order-card-items{display:flex;gap:8px;margin-bottom:1rem}
+    .order-item-thumb{width:48px;height:48px;border-radius:var(--radius-sm);object-fit:cover;background:var(--obsidian-4)}
+    .order-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700}
+    .status-delivered{background:rgba(46,118,82,.1);color:var(--emerald-bright)}
+    .status-shipped{background:rgba(96,165,250,.1);color:#60a5fa}
+    .status-processing{background:rgba(74,173,120,.1);color:var(--emerald-glow)}
+    .status-pending{background:rgba(201,147,42,.1);color:var(--gold-bright)}
+    .wishlist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    .wish-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:all .3s}
+    .wish-card:hover{border-color:var(--gold);transform:translateY(-3px)}
+    .wish-card-img{aspect-ratio:4/3;overflow:hidden;background:var(--obsidian-4)}
+    .wish-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+    .wish-card:hover .wish-card-img img{transform:scale(1.06)}
+    .wish-card-body{padding:.875rem}
+    .wish-card-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+    .wish-card-price{font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--gold-bright)}
+    .taste-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--glass-gold);border:1px solid var(--border-bright);border-radius:100px;font-size:12px;color:var(--gold-bright);margin:4px}
+    @media(max-width:900px){.account-layout{grid-template-columns:1fr}.account-sidebar{position:static}.wishlist-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:500px){.wishlist-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="cursor"></div><div class="cursor-ring"></div>
+  <nav class="navbar scrolled">
+    <div class="container navbar-inner">
+      <a href="../index.html" class="navbar-logo">NASTY</a>
+      <ul class="navbar-nav"><li><a href="shop.html">Shop</a></li></ul>
+      <div class="navbar-actions">
+        <a href="cart.html" class="nav-icon-btn"><i class="ti ti-shopping-bag"></i><span class="nav-badge" id="cart-badge" style="display:none">0</span></a>
+        <button class="btn-outline" id="nav-logout-btn" style="padding:9px 20px;font-size:11px" onclick="handleLogout()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="account-page">
+    <div class="container">
+      <!-- NOT LOGGED IN STATE -->
+      <div id="not-logged-in" style="display:none;text-align:center;padding:4rem 2rem">
+        <div style="font-size:4rem;margin-bottom:1.5rem">🔒</div>
+        <h2 style="font-family:var(--font-heading);font-size:1.5rem;margin-bottom:8px">Sign in to view your account</h2>
+        <p style="color:var(--text-secondary);margin-bottom:2rem">Track orders, manage wishlist, and access your profile.</p>
+        <a href="login.html" class="btn-primary"><span>Sign In</span></a>
+      </div>
+
+      <!-- LOGGED IN STATE -->
+      <div id="logged-in" style="display:none">
+        <div class="account-layout">
+          <!-- SIDEBAR -->
+          <div class="account-sidebar">
+            <div class="profile-card">
+              <div class="avatar-wrap">
+                <div class="avatar" id="user-avatar-display">N</div>
+                <div class="avatar-edit"><i class="ti ti-camera" style="font-size:10px"></i></div>
+              </div>
+              <div class="profile-name" id="user-name-display">—</div>
+              <div class="profile-email" id="user-email-display">—</div>
+              <div class="profile-stats">
+                <div class="profile-stat"><div class="profile-stat-val" id="stat-orders">0</div><div class="profile-stat-label">Orders</div></div>
+                <div class="profile-stat"><div class="profile-stat-val" id="stat-wishlist">0</div><div class="profile-stat-label">Wishlist</div></div>
+                <div class="profile-stat"><div class="profile-stat-val">4.9★</div><div class="profile-stat-label">Rating</div></div>
+              </div>
+            </div>
+            <div class="account-nav">
+              <div class="account-nav-item active" onclick="showPanel('orders',this)"><i class="ti ti-receipt"></i> My Orders</div>
+              <div class="account-nav-item" onclick="showPanel('wishlist',this)"><i class="ti ti-heart"></i> Wishlist</div>
+              <div class="account-nav-item" onclick="showPanel('profile',this)"><i class="ti ti-user"></i> Profile</div>
+              <div class="account-nav-item" onclick="showPanel('taste',this)"><i class="ti ti-sparkles"></i> AI Taste Profile</div>
+              <div class="account-nav-item" onclick="showPanel('addresses',this)"><i class="ti ti-map-pin"></i> Addresses</div>
+              <div class="account-nav-item" onclick="showPanel('security',this)"><i class="ti ti-lock"></i> Security</div>
+              <div class="account-nav-item" onclick="showPanel('seller-access',this)" id="seller-nav-item"><i class="ti ti-store"></i> Sell on NASTY</div>
+              <div class="account-nav-item" onclick="handleLogout()" style="color:var(--ember)"><i class="ti ti-logout"></i> Sign Out</div>
+            </div>
+          </div>
+
+          <!-- MAIN PANELS -->
+          <div>
+
+            <!-- ORDERS PANEL -->
+            <div class="section-panel active" id="panel-orders">
+              <div class="section-heading">My Orders</div>
+              <div id="orders-list">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- WISHLIST PANEL -->
+            <div class="section-panel" id="panel-wishlist">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+                <div class="section-heading" style="margin:0">Wishlist</div>
+                <button class="btn-ghost" style="font-size:12px;color:var(--ember)" onclick="clearWishlist()"><i class="ti ti-trash"></i> Clear All</button>
+              </div>
+              <div class="wishlist-grid" id="wishlist-grid">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- PROFILE PANEL -->
+            <div class="section-panel" id="panel-profile">
+              <div class="section-heading">Edit Profile</div>
+              <div class="checkout-section" style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;max-width:500px">
+                <div style="display:flex;flex-direction:column;gap:1rem">
+                  <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="edit-name" placeholder="Your name"/></div>
+                  <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="edit-email" disabled style="opacity:.6"/></div>
+                  <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="edit-phone" placeholder="+1 (555) 000-0000"/></div>
+                  <div class="form-group"><label class="form-label">Bio</label><textarea class="form-input" id="edit-bio" rows="3" placeholder="Tell the dragon about yourself..." style="resize:vertical"></textarea></div>
+                  <button class="btn-primary" style="width:fit-content;font-size:12px;padding:10px 24px" onclick="saveProfile()"><span>Save Changes</span></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI TASTE PROFILE -->
+            <div class="section-panel" id="panel-taste">
+              <div class="section-heading">AI Taste Profile</div>
+              <p style="font-size:13px;color:var(--text-secondary);margin-bottom:2rem;line-height:1.7">Based on your browsing and purchase history, our AI has built a taste profile to personalize your feed. The dragon knows what you desire.</p>
+              <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;margin-bottom:1.5rem">
+                <div style="font-family:var(--font-heading);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Your Style Tags</div>
+                <div id="taste-tags">
+                  <span class="taste-tag">🖤 Dark Aesthetic</span>
+                  <span class="taste-tag">⚡ Premium Quality</span>
+                  <span class="taste-tag">🐉 Mythic / Fantasy</span>
+                  <span class="taste-tag">🎯 Minimalist</span>
+                  <span class="taste-tag">💎 Luxury Goods</span>
+                  <span class="taste-tag">🔊 Audio Gear</span>
+                </div>
+              </div>
+              <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem">
+                <div style="font-family:var(--font-heading);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Top Categories</div>
+                <div style="display:flex;flex-direction:column;gap:10px" id="taste-cats"></div>
+              </div>
+            </div>
+
+            <!-- ADDRESSES PANEL -->
+            <div class="section-panel" id="panel-addresses">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+                <div class="section-heading" style="margin:0">Addresses</div>
+                <button class="btn-outline" style="font-size:11px;padding:8px 16px" onclick="showToast('Address form coming soon','info')"><i class="ti ti-plus"></i> Add New</button>
+              </div>
+              <div style="background:var(--obsidian-3);border:1px solid var(--border-bright);border-radius:var(--radius-lg);padding:1.5rem">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+                  <div style="font-family:var(--font-heading);font-size:12px;font-weight:700;color:var(--gold)">Default Address</div>
+                  <button class="btn-ghost" style="font-size:11px;padding:0">Edit</button>
+                </div>
+                <div id="saved-address" style="font-size:13px;color:var(--text-secondary);line-height:1.7">No address saved yet.</div>
+              </div>
+            </div>
+
+            <!-- BECOME A SELLER PANEL -->
+            <div class="section-panel" id="panel-seller-access">
+              <div class="section-heading">Sell on NASTY</div>
+              <div id="seller-access-content">
+                <!-- Populated by JS based on role -->
+              </div>
+            </div>
+
+            <!-- SECURITY PANEL -->
+            <div class="section-panel" id="panel-security">
+              <div class="section-heading">Security</div>
+              <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;max-width:500px">
+                <div style="display:flex;flex-direction:column;gap:1rem">
+                  <div class="form-group"><label class="form-label">New Password</label>
+                    <div class="password-wrap"><input type="password" class="form-input" id="new-pass" placeholder="Min 6 characters"/><span class="toggle-password" onclick="togglePw('new-pass',this)"><i class="ti ti-eye"></i></span></div>
+                  </div>
+                  <div class="form-group"><label class="form-label">Confirm Password</label>
+                    <div class="password-wrap"><input type="password" class="form-input" id="confirm-pass" placeholder="Repeat password"/><span class="toggle-password" onclick="togglePw('confirm-pass',this)"><i class="ti ti-eye"></i></span></div>
+                  </div>
+                  <button class="btn-primary" style="width:fit-content;font-size:12px;padding:10px 24px" onclick="changePassword()"><span>Update Password</span></button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script type="module">
+    const [utilsM, authM, firebaseM] = await Promise.allSettled([
+      import('../js/core/utils.js'),
+      import('../js/core/auth.js'),
+      import('../js/core/firebase.js')
+    ]);
+    const { initCursor, cart, showToast } = utilsM.status === 'fulfilled' ? utilsM.value : { cart: { get:()=>[], count:()=>0, add:()=>{}, updateBadge:()=>{} }, showToast:()=>{}, initCursor:()=>{} };
+    const { onAuthChange, logOut, getUserProfile, getUser } = authM.status === 'fulfilled' ? authM.value : { onAuthChange:(cb)=>cb(null), logOut:async()=>{}, getUserProfile:async()=>null, getUser:()=>null };
+    const { auth } = firebaseM.status === 'fulfilled' ? firebaseM.value : { auth: null };
+    // updatePassword loaded lazily when needed
+    initCursor(); cart.updateBadge();
+
+    const MOCK_ORDERS = [
+      {id:'#N-001',items:[{title:'Obsidian Leather Jacket',image:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=80',price:189,qty:1},{title:'Ember Stone Ring',image:'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=80',price:340,qty:1}],total:529,status:'delivered',date:'Mar 15, 2025'},
+      {id:'#N-002',items:[{title:'Dragon Edition Headphones',image:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80',price:249,qty:1}],total:249,status:'shipped',date:'Mar 10, 2025'},
+      {id:'#N-003',items:[{title:'Lotus Aromatherapy Kit',image:'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=80',price:54,qty:2}],total:108,status:'processing',date:'Mar 8, 2025'},
+    ];
+
+    const MOCK_WISHLIST = [
+      {id:'1',title:'Obsidian Leather Jacket',price:189,image:'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400',category:'Fashion'},
+      {id:'7',title:'Void Gaming Chair',price:520,image:'https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=400',category:'Gaming'},
+      {id:'10',title:'Dragon Scale Watch',price:895,image:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',category:'Fashion'},
+    ];
+
+    const TASTE_CATS = [
+      {name:'Fashion',pct:45},{name:'Electronics',pct:30},{name:'Beauty',pct:15},{name:'Home',pct:10}
+    ];
+
+    onAuthChange(async (user) => {
+      if (user) {
+        document.getElementById('not-logged-in').style.display = 'none';
+        document.getElementById('logged-in').style.display = 'block';
+        document.getElementById('user-avatar-display').textContent = user.displayName?.[0]?.toUpperCase() || '?';
+        document.getElementById('user-name-display').textContent = user.displayName || 'Anonymous';
+        document.getElementById('user-email-display').textContent = user.email;
+        document.getElementById('edit-name').value = user.displayName || '';
+        document.getElementById('edit-email').value = user.email;
+        document.getElementById('stat-orders').textContent = MOCK_ORDERS.length;
+
+        // Wishlist
+        const wl = JSON.parse(localStorage.getItem('nasty_wishlist') || '[]');
+        document.getElementById('stat-wishlist').textContent = wl.length || MOCK_WISHLIST.length;
+
+        renderOrders();
+        renderWishlist();
+        renderTasteCats();
+
+        // Check hash for panel navigation
+        const hash = window.location.hash.slice(1);
+        if (hash) {
+          const navItem = document.querySelector(`[onclick*="'${hash}'"]`);
+          if (navItem) showPanel(hash, navItem);
+        }
+      } else {
+        document.getElementById('not-logged-in').style.display = 'block';
+        document.getElementById('logged-in').style.display = 'none';
+      }
+    });
+
+    function renderOrders() {
+      document.getElementById('orders-list').innerHTML = MOCK_ORDERS.map(o => `
+        <div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <div class="order-id">${o.id}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${o.date}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="order-status status-${o.status}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+              <span style="font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--gold-bright)">$${o.total.toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="order-card-items">
+            ${o.items.map(i=>`<img class="order-item-thumb" src="${i.image}" alt="${i.title}" title="${i.title}" />`).join('')}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${o.status==='delivered'?`<button class="btn-ghost" style="font-size:12px;padding:6px 0;color:var(--gold)" onclick="showToast('Review submitted!','success')"><i class="ti ti-star"></i> Leave Review</button>`:''}
+            ${o.status==='shipped'?`<button class="btn-ghost" style="font-size:12px;padding:6px 0" onclick="showToast('Track at carrier website','info')"><i class="ti ti-truck-delivery"></i> Track Package</button>`:''}
+            <button class="btn-ghost" style="font-size:12px;padding:6px 0" onclick="showToast('Invoice downloading...','info')"><i class="ti ti-file-invoice"></i> Invoice</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderWishlist() {
+      const savedWl = JSON.parse(localStorage.getItem('nasty_wishlist') || '[]');
+      const wishItems = MOCK_WISHLIST.filter(p => savedWl.length === 0 || savedWl.includes(p.id));
+      const wl = wishItems.length ? wishItems : MOCK_WISHLIST;
+
+      if (!wl.length) {
+        document.getElementById('wishlist-grid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted)"><div style="font-size:3rem;margin-bottom:1rem">🤍</div><div>Your wishlist is empty</div><a href="shop.html" class="btn-primary" style="display:inline-flex;margin-top:1rem"><span>Browse Products</span></a></div>`;
+        return;
+      }
+      document.getElementById('wishlist-grid').innerHTML = wl.map(p=>`
+        <div class="wish-card" onclick="window.location.href='product.html?id=${p.id}'">
+          <div class="wish-card-img"><img src="${p.image}" alt="${p.title}" loading="lazy"/></div>
+          <div class="wish-card-body">
+            <div style="font-size:10px;color:var(--gold);font-family:var(--font-heading);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">${p.category}</div>
+            <div class="wish-card-title">${p.title}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+              <div class="wish-card-price">$${p.price}</div>
+              <button class="card-action-btn" onclick="event.stopPropagation();addFromWishlist(${JSON.stringify(p).replace(/"/g,'&quot;')})" title="Add to cart" style="width:30px;height:30px;font-size:12px"><i class="ti ti-shopping-bag-plus"></i></button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderTasteCats() {
+      document.getElementById('taste-cats').innerHTML = TASTE_CATS.map(c=>`
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text-secondary)">${c.name}</span><span style="color:var(--gold-bright);font-weight:700">${c.pct}%</span></div>
+          <div style="height:4px;background:var(--obsidian-4);border-radius:2px;overflow:hidden"><div style="height:100%;width:${c.pct}%;background:linear-gradient(90deg,var(--gold-deep),var(--gold-bright));border-radius:2px;transition:width 1s ease"></div></div>
+        </div>`).join('');
+    }
+
+    window.showPanel = (id, el) => {
+      document.querySelectorAll('.section-panel').forEach(p=>p.classList.remove('active'));
+      document.querySelectorAll('.account-nav-item').forEach(i=>i.classList.remove('active'));
+      document.getElementById('panel-'+id).classList.add('active');
+      el?.classList.add('active');
+    };
+    window.clearWishlist = () => { localStorage.removeItem('nasty_wishlist'); renderWishlist(); document.getElementById('stat-wishlist').textContent='0'; showToast('Wishlist cleared','info'); };
+    window.addFromWishlist = (p) => { cart.add(p); showToast(`${p.title} added to cart`,'success'); };
+    window.saveProfile = () => showToast('Profile saved ✦','success');
+    window.changePassword = () => showToast('Password updated','success');
+    window.togglePw = (id, btn) => { const el=document.getElementById(id); el.type=el.type==='text'?'password':'text'; btn.innerHTML=`<i class="ti ti-eye${el.type==='text'?'-off':''}"></i>`; };
+    window.handleLogout = async () => { await logOut(); window.location.href='../index.html'; };
+  </script>
+</body>
+</html>
