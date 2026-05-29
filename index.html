@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="NASTY — The mythic marketplace. AI-powered. Dragon-guarded. Unmatched." />
+  <title>NASTY — Mythic Marketplace</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <style>
+    .hero{position:relative;height:100vh;min-height:680px;display:flex;align-items:center;overflow:hidden;background:radial-gradient(ellipse at 65% 50%,rgba(201,147,42,.06),transparent 65%),var(--obsidian)}
+    #dragon-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block}
+    .hero-overlay{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 50%,transparent 25%,rgba(5,5,7,.85) 70%);z-index:2;pointer-events:none}
+    .hero-overlay-bottom{position:absolute;bottom:0;left:0;right:0;height:220px;background:linear-gradient(to top,var(--obsidian),transparent);z-index:2;pointer-events:none}
+    .hero-content{position:relative;z-index:3;padding:0 2rem;max-width:680px}
+    .hero-eyebrow{font-family:var(--font-heading);font-size:10px;font-weight:700;letter-spacing:.4em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;display:flex;align-items:center;gap:12px}
+    .hero-eyebrow::before{content:'';width:40px;height:1px;background:var(--gold)}
+    #hero-logo{font-family:var(--font-display);font-size:clamp(4.5rem,12vw,9rem);font-weight:900;line-height:.9;background:linear-gradient(135deg,var(--gold-deep) 0%,var(--gold) 40%,var(--gold-shimmer) 60%,var(--gold) 80%,var(--gold-deep) 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldShimmer 5s linear infinite;margin-bottom:1.5rem}
+    .hero-tagline{font-family:var(--font-heading);font-size:clamp(.9rem,2vw,1.1rem);font-weight:400;color:var(--text-secondary);line-height:1.7;max-width:480px;margin-bottom:2.5rem;letter-spacing:.03em}
+    .hero-cta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}
+    .hero-search{max-width:480px;position:relative}
+    .hero-search-input{width:100%;padding:14px 56px 14px 22px;background:rgba(10,10,15,.85);border:1px solid var(--border-bright);border-radius:100px;color:var(--text-primary);font-size:14px;backdrop-filter:blur(12px);transition:all .3s;font-family:var(--font-body)}
+    .hero-search-input::placeholder{color:var(--text-muted)}
+    .hero-search-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,147,42,.1);outline:none}
+    .hero-search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;background:linear-gradient(135deg,var(--gold-deep),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--obsidian);font-size:1rem;transition:all .2s;border:none;cursor:pointer}
+    .hero-search-btn:hover{background:linear-gradient(135deg,var(--gold),var(--gold-shimmer));transform:translateY(-50%) scale(1.05)}
+    .search-ai-hint{font-size:11px;color:var(--text-muted);margin-top:8px;padding-left:22px;display:flex;align-items:center;gap:6px}
+    #scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--font-heading);font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--text-muted)}
+    .scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollPulse 1.5s ease-in-out infinite}
+    @keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+    #dragon-load-wrap{position:absolute;bottom:4rem;right:2rem;z-index:4;width:130px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+    #dragon-load-label{font-family:var(--font-heading);font-size:9px;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase}
+    #dragon-load-track{width:100%;height:1px;background:var(--obsidian-4);border-radius:1px;overflow:hidden}
+    #dragon-load-bar{height:100%;width:0%;background:var(--gold);transition:width .3s ease}
+    .marquee-strip{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.875rem 0;background:var(--obsidian-2)}
+    .marquee-track{display:flex;gap:3rem;animation:marqueeScroll 35s linear infinite;width:max-content}
+    @keyframes marqueeScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .marquee-item{display:flex;align-items:center;gap:12px;font-family:var(--font-heading);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap}
+    .marquee-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+    .categories-section{padding:5rem 0}
+    .categories-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:1rem;scrollbar-width:none}
+    .categories-scroll::-webkit-scrollbar{display:none}
+    .category-card{flex-shrink:0;width:140px;padding:1.5rem 1rem;background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;cursor:pointer;transition:all .3s}
+    .category-card:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 8px 24px rgba(201,147,42,.1)}
+    .category-icon{font-size:2rem;margin-bottom:10px;display:block}
+    .category-name{font-family:var(--font-heading);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+    .category-count{font-size:11px;color:var(--text-muted);margin-top:4px}
+    .featured-section{padding:5rem 0}
+    .section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem}
+    .stats-section{padding:5rem 0}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden}
+    .stat-cell{background:var(--obsidian-2);padding:3rem 2rem;text-align:center;position:relative}
+    .stat-cell::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:30%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+    .ai-section{padding:5rem 0}
+    .ai-features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+    .ai-feature-card{padding:2rem;background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);transition:all .3s}
+    .ai-feature-card:hover{border-color:var(--gold);transform:translateY(-4px)}
+    .ai-feature-icon{font-size:2rem;margin-bottom:1rem;display:block}
+    .ai-feature-title{font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
+    .ai-feature-desc{font-size:13px;color:var(--text-secondary);line-height:1.7}
+    .ai-badge{display:inline-block;margin-top:12px;padding:3px 10px;background:rgba(201,147,42,.08);border:1px solid var(--border-bright);border-radius:100px;font-family:var(--font-heading);font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)}
+    .seller-cta-section{padding:5rem 0}
+    .seller-cta-inner{background:linear-gradient(135deg,var(--obsidian-3),var(--obsidian-4));border:1px solid var(--border-bright);border-radius:var(--radius-xl);padding:4rem;display:grid;grid-template-columns:1fr auto;gap:3rem;align-items:center;position:relative;overflow:hidden}
+    .seller-cta-inner::before{content:'🐉';position:absolute;right:2rem;top:50%;transform:translateY(-50%);font-size:8rem;opacity:.06;pointer-events:none}
+    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.ai-features-grid{grid-template-columns:1fr 1fr}.seller-cta-inner{grid-template-columns:1fr;text-align:center}}
+    @media(max-width:600px){.ai-features-grid{grid-template-columns:1fr}.hero-content{max-width:100%}}
+  </style>
+</head>
+<body>
+
+  <!-- LOADING SCREEN — dismissed by plain JS, no module dependency -->
+  <div id="loading-screen" style="position:fixed;inset:0;background:var(--obsidian);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transition:opacity .7s ease">
+    <div style="font-family:var(--font-display);font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--gold-deep),var(--gold),var(--gold-shimmer));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:loadPulse 1.5s ease-in-out infinite">NASTY</div>
+    <div style="width:200px;height:2px;background:var(--obsidian-4);border-radius:1px;overflow:hidden"><div id="load-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold-deep),var(--gold-bright));border-radius:1px;transition:width .3s ease"></div></div>
+    <div style="font-family:var(--font-heading);font-size:11px;letter-spacing:.25em;color:var(--text-muted);text-transform:uppercase">Awakening the dragon...</div>
+  </div>
+
+  <script>
+    // PLAIN JS — runs immediately, no imports, no modules, guaranteed to work
+    var _lb = document.getElementById('load-bar');
+    var _lpct = 0;
+    var _lint = setInterval(function(){
+      _lpct = Math.min(_lpct + Math.random() * 20, 92);
+      if(_lb) _lb.style.width = _lpct + '%';
+    }, 150);
+    function _dismissLoader(){
+      clearInterval(_lint);
+      if(_lb) _lb.style.width = '100%';
+      setTimeout(function(){
+        var s = document.getElementById('loading-screen');
+        if(!s) return;
+        s.style.opacity = '0';
+        s.style.pointerEvents = 'none';
+        setTimeout(function(){ s.style.display = 'none'; }, 750);
+      }, 200);
+    }
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(_dismissLoader, 900); });
+    setTimeout(_dismissLoader, 3500); // hard fallback
+  </script>
+
+  <div class="cursor"></div>
+  <div class="cursor-ring"></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="navbar-logo">NASTY</a>
+      <ul class="navbar-nav" id="nav-links">
+        <li><a href="pages/shop.html">Shop</a></li>
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="pages/account.html">Account</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <a href="pages/cart.html" class="nav-icon-btn" title="Cart">
+          <i class="ti ti-shopping-bag"></i>
+          <span class="nav-badge" id="cart-badge" style="display:none">0</span>
+        </a>
+        <a href="pages/account.html#wishlist" class="nav-icon-btn" title="Wishlist"><i class="ti ti-heart"></i></a>
+        <a href="pages/login.html" class="btn-outline" id="nav-login-btn" style="padding:9px 20px;font-size:11px">Sign In</a>
+        <button class="nav-icon-btn hidden" id="nav-user-btn" onclick="window.location.href='pages/account.html'" title="Account">
+          <span id="nav-user-avatar" style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--gold)"></span>
+        </button>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <canvas id="dragon-canvas"></canvas>
+    <div class="hero-overlay"></div>
+    <div class="hero-overlay-bottom"></div>
+    <div id="dragon-load-wrap">
+      <span id="dragon-load-label">Loading Dragon</span>
+      <div id="dragon-load-track"><div id="dragon-load-bar"></div></div>
+    </div>
+    <div class="container hero-content">
+      <div class="hero-eyebrow">Mythic · AI-Powered · Unlimited</div>
+      <div id="hero-logo">NASTY</div>
+      <p class="hero-tagline">Where ancient power meets modern commerce.<br/>Shop everything. Sell anything. Guided by dragon fire.</p>
+      <div class="hero-cta">
+        <a href="pages/shop.html" class="btn-primary"><span>⚔ Explore the Market</span></a>
+        <a href="pages/account.html#become-seller" class="btn-outline"><span>🐉 Become a Seller</span></a>
+      </div>
+      <div class="hero-search">
+        <input type="text" id="hero-search-input" class="hero-search-input" placeholder='Try "dark jacket under $200" or "gaming setup"...' autocomplete="off"/>
+        <button class="hero-search-btn" id="hero-search-btn"><i class="ti ti-sparkles"></i></button>
+        <div class="search-ai-hint"><i class="ti ti-robot" style="color:var(--gold)"></i><span>AI understands natural language · Llama 3.3</span></div>
+      </div>
+    </div>
+    <div id="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-strip"><div class="marquee-track" id="marquee-track"></div></div>
+
+  <!-- CATEGORIES -->
+  <section class="categories-section" id="categories">
+    <div class="container">
+      <div class="text-center reveal" style="margin-bottom:3rem">
+        <div class="section-eyebrow">Explore</div>
+        <h2 class="section-title">Every realm, every desire</h2>
+        <div class="divider-gold"></div>
+      </div>
+      <div class="categories-scroll" id="categories-grid"></div>
+    </div>
+  </section>
+
+  <!-- FEATURED -->
+  <section class="featured-section" id="featured">
+    <div class="container">
+      <div class="section-header reveal">
+        <div><div class="section-eyebrow">Featured</div><h2 class="section-title">Chosen by the dragon</h2></div>
+        <a href="pages/shop.html" class="btn-ghost">View all <i class="ti ti-arrow-right"></i></a>
+      </div>
+      <div class="products-grid" id="featured-products">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--text-muted)">
+          <div style="font-size:2.5rem;margin-bottom:1rem">🔮</div>
+          <div style="font-family:var(--font-heading);font-size:13px;margin-bottom:.5rem;color:var(--text-secondary)">Live products load from Firestore</div>
+          <div style="font-size:12px;margin-bottom:1.5rem">Add your Firebase config to see real products</div>
+          <a href="pages/shop.html" class="btn-outline" style="display:inline-flex;font-size:12px;padding:9px 20px">Browse Shop →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-section" id="about">
+    <div class="container">
+      <div class="reveal" style="margin-bottom:3rem">
+        <div class="section-eyebrow text-center">By the numbers</div>
+        <h2 class="section-title text-center">Power in every metric</h2>
+        <div class="divider-gold"></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-cell reveal delay-1"><div class="stat-number" data-count="120000">0</div><div class="stat-label">Products Listed</div></div>
+        <div class="stat-cell reveal delay-2"><div class="stat-number" data-count="8500">0</div><div class="stat-label">Active Sellers</div></div>
+        <div class="stat-cell reveal delay-3"><div class="stat-number" data-count="420000">0</div><div class="stat-label">Happy Buyers</div></div>
+        <div class="stat-cell reveal delay-4"><div class="stat-number" data-count="99">0</div><div class="stat-label">% Uptime</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI FEATURES -->
+  <section class="ai-section">
+    <div class="container">
+      <div class="text-center reveal">
+        <div class="section-eyebrow">Intelligence</div>
+        <h2 class="section-title">AI lives everywhere</h2>
+        <div class="divider-gold"></div>
+        <p class="section-subtitle" style="margin:1rem auto 0">From the dragon that answers your questions to the engine that recommends your next obsession.</p>
+      </div>
+      <div class="ai-features-grid">
+        <div class="ai-feature-card reveal delay-1"><span class="ai-feature-icon">🐉</span><div class="ai-feature-title">Dragon Chat</div><p class="ai-feature-desc">Talk to the dragon. Find products, get help. Powered by Llama 3.3 70B.</p><span class="ai-badge">Groq · Llama 3.3</span></div>
+        <div class="ai-feature-card reveal delay-2"><span class="ai-feature-icon">🔮</span><div class="ai-feature-title">Intent Search</div><p class="ai-feature-desc">Search like a human. "Something warm for winter under $50" — AI gets it.</p><span class="ai-badge">Groq · NLU</span></div>
+        <div class="ai-feature-card reveal delay-3"><span class="ai-feature-icon">✨</span><div class="ai-feature-title">Recommendations</div><p class="ai-feature-desc">Your feed evolves with you. Sharper intelligence with every visit.</p><span class="ai-badge">Groq · Personalized</span></div>
+        <div class="ai-feature-card reveal delay-4"><span class="ai-feature-icon">📸</span><div class="ai-feature-title">Vision Tagging</div><p class="ai-feature-desc">Upload a product image — AI classifies and tags it instantly.</p><span class="ai-badge">HuggingFace · ViT</span></div>
+        <div class="ai-feature-card reveal delay-5"><span class="ai-feature-icon">✍️</span><div class="ai-feature-title">Listing Writer</div><p class="ai-feature-desc">Type a few keywords. AI writes the full title, description and tags.</p><span class="ai-badge">Groq · Copywriting</span></div>
+        <div class="ai-feature-card reveal delay-6"><span class="ai-feature-icon">📊</span><div class="ai-feature-title">Admin Insights</div><p class="ai-feature-desc">Platform intelligence that surfaces trends and anomalies automatically.</p><span class="ai-badge">Groq · Analytics</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELLER CTA -->
+  <section class="seller-cta-section">
+    <div class="container">
+      <div class="seller-cta-inner reveal">
+        <div>
+          <div class="section-eyebrow">Sell on NASTY</div>
+          <h2 class="section-title" style="font-size:clamp(2rem,4vw,3rem);margin-bottom:1rem">Your products deserve<br/>a mythic stage</h2>
+          <p style="color:var(--text-secondary);font-size:15px;max-width:480px;line-height:1.7;margin-bottom:2rem">Join thousands of sellers. AI writes your listings, tags your images, and puts your products in front of the right buyers.</p>
+          <a href="pages/account.html#become-seller" class="btn-primary"><span>⚔ Start Selling Free</span></a>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">NASTY</div>
+          <p style="font-size:13px;color:var(--text-secondary);max-width:300px;line-height:1.7;margin-bottom:1.5rem">The world's most immersive marketplace. Ancient power, modern commerce.</p>
+          <div style="display:flex;gap:10px">
+            <a href="#" class="nav-icon-btn" style="width:36px;height:36px;font-size:.9rem"><i class="ti ti-brand-twitter"></i></a>
+            <a href="#" class="nav-icon-btn" style="width:36px;height:36px;font-size:.9rem"><i class="ti ti-brand-instagram"></i></a>
+            <a href="#" class="nav-icon-btn" style="width:36px;height:36px;font-size:.9rem"><i class="ti ti-brand-discord"></i></a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">Marketplace</div>
+          <ul class="footer-links">
+            <li><a href="pages/shop.html">Browse All</a></li>
+            <li><a href="pages/shop.html?sort=newest">New Arrivals</a></li>
+            <li><a href="pages/shop.html?sort=rating">Top Rated</a></li>
+            <li><a href="pages/shop.html?sale=true">On Sale</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Sellers</div>
+          <ul class="footer-links">
+            <li><a href="pages/account.html#become-seller">Start Selling</a></li>
+            <li><a href="pages/seller.html">Seller Dashboard</a></li>
+            <li><a href="#">Seller Docs</a></li>
+            <li><a href="#">Fees &amp; Pricing</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Help</div>
+          <ul class="footer-links">
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Use</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 NASTY Marketplace. All rights reserved.</span>
+        <span style="color:var(--text-muted);font-size:11px;letter-spacing:.1em">Dragon: NORBERTO-3D / Sketchfab (CC BY)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="auth-modal-overlay" onclick="if(event.target===this)closeAuthModal()">
+    <div class="auth-modal" onclick="event.stopPropagation()">
+      <div class="auth-modal-header">
+        <div class="auth-modal-logo">NASTY</div>
+        <h2 id="auth-modal-title">Welcome Back</h2>
+        <p id="auth-modal-subtitle">Sign in to continue your journey</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+      <div class="auth-body">
+        <div class="auth-step active" id="step-login">
+          <form class="auth-form" onsubmit="handleLogin(event)">
+            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="login-email" placeholder="you@example.com" required/></div>
+            <div class="form-group"><label class="form-label">Password</label>
+              <div class="password-wrap"><input type="password" class="form-input" id="login-password" placeholder="Your password" required/><span class="toggle-password" onclick="togglePassword('login-password',this)"><i class="ti ti-eye"></i></span></div>
+            </div>
+            <div id="login-error" class="form-error"></div>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center" id="login-btn"><span>Sign In</span></button>
+            <div class="auth-divider"><span>or</span></div>
+            <button type="button" class="btn-outline" style="width:100%;justify-content:center;gap:10px" onclick="handleGoogleAuth()">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
+            <div style="text-align:center"><button type="button" class="btn-ghost" onclick="showAuthStep('step-forgot')" style="font-size:12px">Forgot password?</button></div>
+          </form>
+        </div>
+        <div class="auth-step" id="step-signup">
+          <form class="auth-form" onsubmit="handleSignup(event)">
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="signup-name" placeholder="Your name" required/></div>
+            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="signup-email" placeholder="you@example.com" required/></div>
+            <div class="form-group"><label class="form-label">Password</label>
+              <div class="password-wrap"><input type="password" class="form-input" id="signup-password" placeholder="Min 6 characters" required/><span class="toggle-password" onclick="togglePassword('signup-password',this)"><i class="ti ti-eye"></i></span></div>
+            </div>
+            <div id="signup-error" class="form-error"></div>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center" id="signup-btn"><span>Create Account</span></button>
+            <div class="auth-divider"><span>or</span></div>
+            <button type="button" class="btn-outline" style="width:100%;justify-content:center;gap:10px" onclick="handleGoogleAuth()">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Sign up with Google
+            </button>
+          </form>
+        </div>
+        <div class="auth-step" id="step-verify">
+          <div style="text-align:center">
+            <div style="width:70px;height:70px;background:linear-gradient(135deg,var(--gold-deep),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1.5rem">📧</div>
+            <h3 style="font-family:var(--font-heading);font-size:1.1rem;margin-bottom:8px">Verify your email</h3>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem;line-height:1.6">We sent a link to <strong id="verify-email-display" style="color:var(--gold-bright)"></strong>. Click it then sign in.</p>
+            <button class="btn-primary" style="width:100%;justify-content:center" onclick="switchAuthTab('login')"><span>Go to Sign In</span></button>
+          </div>
+        </div>
+        <div class="auth-step" id="step-forgot">
+          <form class="auth-form" onsubmit="handleForgotPassword(event)">
+            <div style="text-align:center;margin-bottom:1.5rem">
+              <div style="width:64px;height:64px;background:linear-gradient(135deg,var(--emerald),var(--emerald-bright));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 1rem">🔑</div>
+              <h3 style="font-family:var(--font-heading);font-size:1rem;margin-bottom:4px">Reset password</h3>
+            </div>
+            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="forgot-email" placeholder="you@example.com" required/></div>
+            <div id="forgot-error" class="form-error"></div>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center"><span>Send Reset Link</span></button>
+            <button type="button" class="btn-ghost" onclick="showAuthStep('step-login')" style="width:100%;justify-content:center;margin-top:.5rem">← Back</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAGON CHAT -->
+  <div style="position:fixed;bottom:2rem;right:2rem;z-index:5000">
+    <div class="dragon-chat-window hidden" id="chat-window">
+      <div class="chat-header">
+        <div class="chat-header-avatar">🐉</div>
+        <div class="chat-header-info"><h4>NAST — Dragon AI</h4><p>● Online · Llama 3.3</p></div>
+        <button onclick="document.getElementById('chat-window').classList.add('hidden')" style="margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="message ai">Greetings. I am NAST, guardian of this marketplace. 🔥 Ask me anything.</div>
+      </div>
+      <div class="chat-input-wrap">
+        <input type="text" class="chat-input" id="chat-input" placeholder="Ask the dragon..." onkeydown="if(event.key==='Enter')sendChatMessage()"/>
+        <button class="chat-send-btn" onclick="sendChatMessage()"><i class="ti ti-send"></i></button>
+      </div>
+    </div>
+    <button class="dragon-chat-btn" onclick="document.getElementById('chat-window').classList.toggle('hidden')" title="Dragon AI">🐉</button>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <!-- ALL SCRIPTS — plain JS first, async module imports only for optional features -->
+  <script>
+    // Navbar scroll
+    window.addEventListener('scroll', function(){ document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60); });
+
+    // Hamburger - open/close nav
+    document.getElementById('hamburger').addEventListener('click', function(){
+      var open = !document.getElementById('nav-links').classList.contains('open');
+      this.classList.toggle('open', open);
+      document.getElementById('nav-links').classList.toggle('open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    });
+    // Close nav when any link inside it is clicked
+    document.getElementById('nav-links').addEventListener('click', function(e){
+      if(e.target.tagName === 'A'){
+        document.getElementById('hamburger').classList.remove('open');
+        this.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+    // Close on Escape
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){
+        document.getElementById('hamburger').classList.remove('open');
+        document.getElementById('nav-links').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Cart badge
+    try {
+      var _ci = JSON.parse(localStorage.getItem('nasty_cart')||'[]');
+      var _cc = _ci.reduce(function(s,i){return s+(i.qty||1);},0);
+      if(_cc > 0){ var _cb = document.getElementById('cart-badge'); if(_cb){_cb.textContent=_cc;_cb.style.display='flex';} }
+    } catch(e){}
+
+    // Cursor
+    (function(){
+      var c=document.querySelector('.cursor'), r=document.querySelector('.cursor-ring');
+      if(!c||!r) return;
+      var mx=0,my=0,rx=0,ry=0;
+      document.addEventListener('mousemove',function(e){ mx=e.clientX;my=e.clientY;c.style.cssText='left:'+mx+'px;top:'+my+'px;transform:translate(-50%,-50%)'; });
+      (function loop(){ rx+=(mx-rx)*.15;ry+=(my-ry)*.15;r.style.cssText='left:'+rx+'px;top:'+ry+'px';requestAnimationFrame(loop); })();
+      document.querySelectorAll('a,button').forEach(function(el){
+        el.addEventListener('mouseenter',function(){r.classList.add('hovering');});
+        el.addEventListener('mouseleave',function(){r.classList.remove('hovering');});
+      });
+    })();
+
+    // Scroll reveal
+    (function(){
+      var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+      document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach(function(el){obs.observe(el);});
+    })();
+
+    // Marquee
+    (function(){
+      var items=['⚔ New Arrivals','🔥 Top Deals','🐉 AI-Powered','✨ Premium Sellers','🌿 All Categories','💎 Luxury Goods','🎯 Flash Sales','🛡 Buyer Protection'];
+      var t=document.getElementById('marquee-track');
+      if(!t) return;
+      t.innerHTML=items.concat(items).map(function(i){return '<div class="marquee-item"><div class="marquee-dot"></div>'+i+'</div>';}).join('');
+    })();
+
+    // Categories
+    (function(){
+      var CATS=[{icon:'📱',name:'Electronics',count:'12K+'},{icon:'👗',name:'Fashion',count:'34K+'},{icon:'💄',name:'Beauty',count:'8K+'},{icon:'🏠',name:'Home',count:'15K+'},{icon:'⚽',name:'Sports',count:'6K+'},{icon:'📚',name:'Books',count:'22K+'},{icon:'🧸',name:'Toys',count:'5K+'},{icon:'🍕',name:'Food',count:'3K+'},{icon:'🚗',name:'Automotive',count:'9K+'},{icon:'🎮',name:'Gaming',count:'7K+'}];
+      var g=document.getElementById('categories-grid');
+      if(!g) return;
+      g.innerHTML=CATS.map(function(c){return '<div class="category-card" onclick="window.location.href=\'pages/shop.html?cat='+c.name+'\'"><span class="category-icon">'+c.icon+'</span><div class="category-name">'+c.name+'</div><div class="category-count">'+c.count+' items</div></div>';}).join('');
+    })();
+
+    // Stat counters
+    (function(){
+      var obs=new IntersectionObserver(function(es){es.forEach(function(entry){
+        if(!entry.isIntersecting) return;
+        var el=entry.target,target=parseInt(el.dataset.count),start=performance.now(),dur=1800;
+        (function tick(now){var p=Math.min((now-start)/dur,1),e=1-Math.pow(1-p,3);el.textContent=Math.floor(target*e).toLocaleString();if(p<1)requestAnimationFrame(tick);})(start);
+        obs.unobserve(el);
+      });},{threshold:.3});
+      document.querySelectorAll('[data-count]').forEach(function(el){obs.observe(el);});
+    })();
+
+    // Hero search
+    function _doSearch(){var q=document.getElementById('hero-search-input').value.trim();if(q)window.location.href='pages/shop.html?q='+encodeURIComponent(q);}
+    document.getElementById('hero-search-btn').addEventListener('click',_doSearch);
+    document.getElementById('hero-search-input').addEventListener('keydown',function(e){if(e.key==='Enter')_doSearch();});
+
+    // Toast
+    function showToast(msg,type){
+      var c=document.querySelector('.toast-container');
+      if(!c) return;
+      var icons={success:'✦',error:'✕',info:'◆'};
+      var t=document.createElement('div');t.className='toast '+(type||'info');
+      t.innerHTML='<span style="color:var(--gold)">'+(icons[type]||'◆')+'</span> '+msg;
+      c.appendChild(t);setTimeout(function(){t.style.animation='toastOut .3s ease forwards';setTimeout(function(){t.remove();},300);},3500);
+    }
+
+    // Auth modal
+    function openAuthModal(tab){document.getElementById('auth-modal-overlay').classList.add('active');switchAuthTab(tab||'login');}
+    function closeAuthModal(){document.getElementById('auth-modal-overlay').classList.remove('active');}
+    function switchAuthTab(tab){
+      document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});
+      document.getElementById('tab-'+tab).classList.add('active');
+      showAuthStep('step-'+tab);
+      document.getElementById('auth-modal-title').textContent=tab==='login'?'Welcome Back':'Join NASTY';
+      document.getElementById('auth-modal-subtitle').textContent=tab==='login'?'Sign in to continue':'Create your account — free forever';
+    }
+    function showAuthStep(id){document.querySelectorAll('.auth-step').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
+    function togglePassword(id,btn){var el=document.getElementById(id);if(!el)return;el.type=el.type==='text'?'password':'text';btn.innerHTML='<i class="ti ti-eye'+(el.type==='text'?'-off':'')+'"></i>';}
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAuthModal();});
+
+    // Auth actions — lazy import Firebase modules only when user actually tries to auth
+    async function handleLogin(e){
+      e.preventDefault();
+      var btn=document.getElementById('login-btn'),err=document.getElementById('login-error');
+      err.classList.remove('show');btn.innerHTML='<span>...</span>';btn.disabled=true;
+      try{
+        var {signIn}=await import('./js/core/auth.js');
+        var r=await signIn(document.getElementById('login-email').value,document.getElementById('login-password').value);
+        if(r.success){closeAuthModal();showToast('Welcome back! 🔥','success');}
+        else if(r.needsVerification){document.getElementById('verify-email-display').textContent=document.getElementById('login-email').value;showAuthStep('step-verify');}
+        else{err.textContent=r.error;err.classList.add('show');}
+      }catch(ex){err.textContent='Add Firebase config to enable sign in';err.classList.add('show');}
+      btn.innerHTML='<span>Sign In</span>';btn.disabled=false;
+    }
+    async function handleSignup(e){
+      e.preventDefault();
+      var btn=document.getElementById('signup-btn'),err=document.getElementById('signup-error');
+      err.classList.remove('show');btn.innerHTML='<span>...</span>';btn.disabled=true;
+      try{
+        var {signUp}=await import('./js/core/auth.js');
+        var r=await signUp(document.getElementById('signup-name').value,document.getElementById('signup-email').value,document.getElementById('signup-password').value);
+        if(r.success){document.getElementById('verify-email-display').textContent=document.getElementById('signup-email').value;showAuthStep('step-verify');}
+        else{err.textContent=r.error;err.classList.add('show');}
+      }catch(ex){err.textContent='Add Firebase config to enable sign up';err.classList.add('show');}
+      btn.innerHTML='<span>Create Account</span>';btn.disabled=false;
+    }
+    async function handleGoogleAuth(){
+      try{var {signInWithGoogle}=await import('./js/core/auth.js');var r=await signInWithGoogle();if(r.success){closeAuthModal();showToast('Signed in! 🔥','success');}else showToast(r.error,'error');}
+      catch(ex){showToast('Add Firebase config to enable Google sign-in','error');}
+    }
+    async function handleForgotPassword(e){
+      e.preventDefault();
+      try{var {resetPassword}=await import('./js/core/auth.js');var r=await resetPassword(document.getElementById('forgot-email').value);if(r.success){showToast('Reset link sent!','success');showAuthStep('step-login');}else{var err=document.getElementById('forgot-error');err.textContent=r.error;err.classList.add('show');}}
+      catch(ex){showToast('Add Firebase config to enable password reset','error');}
+    }
+
+    // Dragon chat
+    var _chatHist=[];
+    async function sendChatMessage(){
+      var input=document.getElementById('chat-input'),msgs=document.getElementById('chat-messages'),text=input.value.trim();
+      if(!text) return;
+      msgs.innerHTML+='<div class="message user">'+text+'</div>';
+      input.value='';msgs.scrollTop=msgs.scrollHeight;
+      var tid='t'+Date.now();
+      msgs.innerHTML+='<div class="typing-indicator" id="'+tid+'"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+      _chatHist.push({role:'user',content:text});
+      try{
+        var {dragonChat}=await import('./js/ai/groq.js');
+        var r=await dragonChat(_chatHist);
+        document.getElementById(tid)?.remove();
+        var reply=r.success?r.content:'Add your Groq API key to enable AI chat. 🔥';
+        _chatHist.push({role:'assistant',content:reply});
+        msgs.innerHTML+='<div class="message ai">'+reply+'</div>';
+      }catch(ex){
+        document.getElementById(tid)?.remove();
+        msgs.innerHTML+='<div class="message ai">Add your Groq API key to enable Dragon AI. 🔥</div>';
+      }
+      msgs.scrollTop=msgs.scrollHeight;
+    }
+
+    // Auth state — lazy, non-blocking
+    (async function(){
+      try{
+        var {onAuthChange}=await import('./js/core/auth.js');
+        onAuthChange(function(user){
+          var lb=document.getElementById('nav-login-btn'),ub=document.getElementById('nav-user-btn');
+          if(user){lb.classList.add('hidden');ub.classList.remove('hidden');document.getElementById('nav-user-avatar').textContent=(user.displayName||'?')[0].toUpperCase();}
+          else{lb.classList.remove('hidden');ub.classList.add('hidden');}
+        });
+      }catch(ex){}
+    })();
+
+    // Dragon 3D — loads after page is visible, shows progress, silent fail
+    window.addEventListener('load', function(){
+      setTimeout(function(){
+        var lbar = document.getElementById('dragon-load-bar');
+        var llabel = document.getElementById('dragon-load-label');
+        if(llabel) llabel.textContent = 'Loading Dragon';
+        if(lbar) lbar.style.width = '10%';
+
+        import('https://unpkg.com/three@0.158.0/build/three.module.js')
+          .then(function(){
+            if(lbar) lbar.style.width = '40%';
+            return import('./js/scene/dragonScene.js');
+          })
+          .then(function(m){
+            if(lbar) lbar.style.width = '80%';
+            m.initDragonScene('dragon-canvas');
+            if(lbar) lbar.style.width = '100%';
+            setTimeout(function(){
+              var w = document.getElementById('dragon-load-wrap');
+              if(w){ w.style.opacity='0'; w.style.transition='opacity .5s'; setTimeout(function(){w.style.display='none';},500); }
+            }, 1200);
+          })
+          .catch(function(e){
+            console.warn('[NASTY] Dragon 3D failed:', e.message);
+            var w = document.getElementById('dragon-load-wrap');
+            if(w) w.innerHTML = '<span style="font-size:10px;color:var(--text-muted);letter-spacing:.1em">Place dragon.glb in assets/models/</span>';
+          });
+      }, 500);
+    });
+  </script>
+</body>
+</html>
