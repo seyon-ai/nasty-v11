@@ -11,12 +11,12 @@ import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-s
 // ✅ REPLACE THIS with your Firebase project config
 // Firebase Console → Project Settings → Your Apps → Web App → Config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBZQqau89IlAoQYgveWOnPCRlHbym1QQqM",
+  authDomain: "nasty-33e29.firebaseapp.com",
+  projectId: "nasty-33e29",
+  storageBucket: "nasty-33e29.firebasestorage.app",
+  messagingSenderId: "311773173321",
+  appId: "1:311773173321:web:41cc05f48c3cba3fe65198"
 };
 
 // Safe init — won't crash if config is placeholder
