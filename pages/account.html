@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>My Account — NASTY</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>"/>
+  <link rel="stylesheet" href="../css/global.css"/><link rel="stylesheet" href="../css/animations.css"/><link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+  <style>
+    .account-page{padding:7rem 0 4rem;min-height:100vh}
+    .account-layout{display:grid;grid-template-columns:280px 1fr;gap:2.5rem;align-items:start}
+    .account-sidebar{position:sticky;top:90px}
+    .profile-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;text-align:center;margin-bottom:1rem}
+    .avatar-wrap{position:relative;width:80px;height:80px;margin:0 auto 1rem}
+    .avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--gold-deep),var(--gold));display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--obsidian);border:3px solid var(--gold)}
+    .profile-name{font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+    .profile-email{font-size:12px;color:var(--text-muted);margin-bottom:1rem}
+    .profile-stats{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden}
+    .profile-stat{flex:1;padding:.75rem;text-align:center;border-right:1px solid var(--border)}
+    .profile-stat:last-child{border-right:none}
+    .profile-stat-val{font-family:var(--font-heading);font-size:1.1rem;font-weight:700;color:var(--gold-bright)}
+    .profile-stat-label{font-size:10px;color:var(--text-muted)}
+    .account-nav{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);overflow:hidden}
+    .account-nav-item{display:flex;align-items:center;gap:12px;padding:1rem 1.25rem;font-size:13px;color:var(--text-secondary);cursor:pointer;transition:all .2s;border-left:2px solid transparent;border-bottom:1px solid var(--border)}
+    .account-nav-item:last-child{border-bottom:none}
+    .account-nav-item:hover{color:var(--text-primary);background:rgba(201,147,42,.04);border-left-color:var(--gold-deep)}
+    .account-nav-item.active{color:var(--gold-bright);background:rgba(201,147,42,.07);border-left-color:var(--gold)}
+    .account-nav-item i{font-size:1rem;width:18px}
+    .section-panel{display:none}
+    .section-panel.active{display:block;animation:pageIn .3s ease}
+    .section-heading{font-family:var(--font-heading);font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem}
+    .empty-state-panel{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+    .empty-state-panel .icon{font-size:3rem;margin-bottom:1rem}
+    .empty-state-panel p{font-size:13px;margin-bottom:1.5rem;color:var(--text-secondary)}
+    .order-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;transition:all .2s}
+    .order-card:hover{border-color:var(--border-bright)}
+    .order-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+    .order-id{font-family:var(--font-heading);font-size:13px;font-weight:700;color:var(--gold-bright)}
+    .order-card-items{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+    .order-item-thumb{width:48px;height:48px;border-radius:var(--radius-sm);object-fit:cover;background:var(--obsidian-4)}
+    .order-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700}
+    .status-delivered{background:rgba(46,118,82,.1);color:var(--emerald-bright)}
+    .status-shipped{background:rgba(96,165,250,.1);color:#60a5fa}
+    .status-processing{background:rgba(74,173,120,.1);color:var(--emerald-glow)}
+    .status-pending{background:rgba(201,147,42,.1);color:var(--gold-bright)}
+    .status-cancelled{background:rgba(212,66,10,.1);color:var(--ember-bright)}
+    .wishlist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    .wish-card{background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:all .3s}
+    .wish-card:hover{border-color:var(--gold);transform:translateY(-3px)}
+    .wish-card-img{aspect-ratio:4/3;overflow:hidden;background:var(--obsidian-4)}
+    .wish-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+    .wish-card:hover .wish-card-img img{transform:scale(1.06)}
+    .wish-card-body{padding:.875rem}
+    .wish-card-title{font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px}
+    .wish-card-price{font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--gold-bright)}
+    .seller-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2rem}
+    .seller-feature{background:var(--obsidian-4);border:1px solid var(--border);border-radius:var(--radius-md);padding:1rem}
+    @media(max-width:900px){.account-layout{grid-template-columns:1fr}.account-sidebar{position:static}.wishlist-grid{grid-template-columns:1fr 1fr}.seller-feature-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:500px){.wishlist-grid{grid-template-columns:1fr}.seller-feature-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="cursor"></div><div class="cursor-ring"></div>
+  <nav class="navbar scrolled">
+    <div class="container navbar-inner">
+      <a href="../index.html" class="navbar-logo">NASTY</a>
+      <ul class="navbar-nav"><li><a href="shop.html">Shop</a></li><li><a href="cart.html">Cart</a></li></ul>
+      <div class="navbar-actions">
+        <a href="cart.html" class="nav-icon-btn"><i class="ti ti-shopping-bag"></i><span class="nav-badge" id="cart-badge" style="display:none">0</span></a>
+        <button class="btn-outline" id="nav-logout-btn" style="padding:9px 20px;font-size:11px" onclick="handleLogout()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="account-page">
+    <div class="container">
+      <!-- NOT LOGGED IN -->
+      <div id="not-logged-in" style="display:none;text-align:center;padding:5rem 2rem">
+        <div style="font-size:4rem;margin-bottom:1.5rem">🔒</div>
+        <h2 style="font-family:var(--font-heading);font-size:1.5rem;margin-bottom:8px">Sign in to view your account</h2>
+        <p style="color:var(--text-secondary);margin-bottom:2rem;font-size:14px">Track orders, manage your wishlist, and access your profile.</p>
+        <a href="login.html" class="btn-primary"><span>Sign In</span></a>
+      </div>
+
+      <!-- LOGGED IN -->
+      <div id="logged-in" style="display:none">
+        <div class="account-layout">
+          <div class="account-sidebar">
+            <div class="profile-card">
+              <div class="avatar-wrap">
+                <div class="avatar" id="user-avatar-display">?</div>
+              </div>
+              <div class="profile-name" id="user-name-display">—</div>
+              <div class="profile-email" id="user-email-display">—</div>
+              <div class="profile-stats">
+                <div class="profile-stat"><div class="profile-stat-val" id="stat-orders">—</div><div class="profile-stat-label">Orders</div></div>
+                <div class="profile-stat"><div class="profile-stat-val" id="stat-wishlist">—</div><div class="profile-stat-label">Wishlist</div></div>
+              </div>
+            </div>
+            <div class="account-nav">
+              <div class="account-nav-item active" onclick="showPanel('orders',this)"><i class="ti ti-receipt"></i> My Orders</div>
+              <div class="account-nav-item" onclick="showPanel('wishlist',this)"><i class="ti ti-heart"></i> Wishlist</div>
+              <div class="account-nav-item" onclick="showPanel('profile',this)"><i class="ti ti-user"></i> Profile</div>
+              <div class="account-nav-item" onclick="showPanel('seller-access',this)"><i class="ti ti-store"></i> Sell on NASTY</div>
+              <div class="account-nav-item" onclick="showPanel('security',this)"><i class="ti ti-lock"></i> Security</div>
+              <div class="account-nav-item" onclick="handleLogout()" style="color:var(--ember)"><i class="ti ti-logout"></i> Sign Out</div>
+            </div>
+          </div>
+
+          <div>
+            <!-- ORDERS -->
+            <div class="section-panel active" id="panel-orders">
+              <div class="section-heading">My Orders</div>
+              <div id="orders-list">
+                <div style="text-align:center;padding:2rem;color:var(--text-muted)">
+                  <div class="spin" style="font-size:1.2rem;display:inline-block">⟳</div>
+                  <div style="margin-top:8px;font-size:12px">Loading orders...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- WISHLIST -->
+            <div class="section-panel" id="panel-wishlist">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+                <div class="section-heading" style="margin:0">Wishlist</div>
+                <button class="btn-ghost" style="font-size:12px;color:var(--ember)" onclick="clearWishlist()"><i class="ti ti-trash"></i> Clear All</button>
+              </div>
+              <div class="wishlist-grid" id="wishlist-grid">
+                <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted)">
+                  <div class="spin" style="font-size:1.2rem;display:inline-block">⟳</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PROFILE -->
+            <div class="section-panel" id="panel-profile">
+              <div class="section-heading">Edit Profile</div>
+              <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;max-width:500px">
+                <div style="display:flex;flex-direction:column;gap:1rem">
+                  <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="edit-name" placeholder="Your name"/></div>
+                  <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="edit-email" disabled style="opacity:.6"/></div>
+                  <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="edit-phone" placeholder="+1 (555) 000-0000"/></div>
+                  <div class="form-group"><label class="form-label">Bio</label><textarea class="form-input" id="edit-bio" rows="3" placeholder="Tell buyers about yourself..." style="resize:vertical"></textarea></div>
+                  <button class="btn-primary" style="width:fit-content;font-size:12px;padding:10px 24px" onclick="saveProfile()"><span>Save Changes</span></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SELL ON NASTY -->
+            <div class="section-panel" id="panel-seller-access">
+              <div class="section-heading">Sell on NASTY</div>
+              <div id="seller-access-content">
+                <div style="text-align:center;padding:2rem;color:var(--text-muted)">
+                  <div class="spin" style="font-size:1.2rem;display:inline-block">⟳</div>
+                  <div style="margin-top:8px;font-size:12px">Loading...</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECURITY -->
+            <div class="section-panel" id="panel-security">
+              <div class="section-heading">Security</div>
+              <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;max-width:500px">
+                <div style="display:flex;flex-direction:column;gap:1rem">
+                  <div class="form-group"><label class="form-label">New Password</label>
+                    <div class="password-wrap"><input type="password" class="form-input" id="new-pass" placeholder="Min 6 characters"/><span class="toggle-password" onclick="togglePw('new-pass',this)"><i class="ti ti-eye"></i></span></div>
+                  </div>
+                  <div class="form-group"><label class="form-label">Confirm Password</label>
+                    <div class="password-wrap"><input type="password" class="form-input" id="confirm-pass" placeholder="Repeat password"/><span class="toggle-password" onclick="togglePw('confirm-pass',this)"><i class="ti ti-eye"></i></span></div>
+                  </div>
+                  <button class="btn-primary" style="width:fit-content;font-size:12px;padding:10px 24px" onclick="changePassword()"><span>Update Password</span></button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container"></div>
+
+  <script type="module">
+    const [utilsM, authM, firebaseM] = await Promise.allSettled([
+      import('../js/core/utils.js'),
+      import('../js/core/auth.js'),
+      import('../js/core/firebase.js')
+    ]);
+    const { initCursor, cart, showToast } = utilsM.status === 'fulfilled' ? utilsM.value : { cart:{updateBadge:()=>{}}, showToast:(m,t)=>alert(m), initCursor:()=>{} };
+    const { onAuthChange, logOut, getUserProfile } = authM.status === 'fulfilled' ? authM.value : { onAuthChange:(cb)=>cb(null), logOut:async()=>{}, getUserProfile:async()=>null };
+    const { auth, db } = firebaseM.status === 'fulfilled' ? firebaseM.value : {};
+
+    initCursor(); cart.updateBadge();
+
+    // ---- Firestore helpers ----
+    async function getOrders(uid) {
+      if (!db) return [];
+      try {
+        const { collection, query, where, orderBy, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const q = query(collection(db, 'orders'), where('userId', '==', uid), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch { return []; }
+    }
+
+    async function getWishlistProducts(ids) {
+      if (!db || !ids.length) return [];
+      try {
+        const { collection, query, where, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const q = query(collection(db, 'products'), where('__name__', 'in', ids.slice(0, 10)));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch { return []; }
+    }
+
+    // ---- Auth state ----
+    onAuthChange(async (user) => {
+      const notLoggedIn = document.getElementById('not-logged-in');
+      const loggedIn = document.getElementById('logged-in');
+      if (!user) {
+        notLoggedIn.style.display = 'block';
+        loggedIn.style.display = 'none';
+        return;
+      }
+      notLoggedIn.style.display = 'none';
+      loggedIn.style.display = 'block';
+
+      // Set basic user info
+      document.getElementById('user-avatar-display').textContent = user.displayName?.[0]?.toUpperCase() || '?';
+      document.getElementById('user-name-display').textContent = user.displayName || 'Anonymous';
+      document.getElementById('user-email-display').textContent = user.email;
+      document.getElementById('edit-name').value = user.displayName || '';
+      document.getElementById('edit-email').value = user.email;
+
+      // Load real orders
+      const orders = await getOrders(user.uid);
+      document.getElementById('stat-orders').textContent = orders.length;
+      renderOrders(orders);
+
+      // Load real wishlist
+      const wishIds = JSON.parse(localStorage.getItem('nasty_wishlist') || '[]');
+      document.getElementById('stat-wishlist').textContent = wishIds.length;
+      const wishProducts = await getWishlistProducts(wishIds);
+      renderWishlist(wishProducts, wishIds);
+
+      // Hash navigation
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        const item = document.querySelector(`.account-nav-item[onclick*="'${hash}'"]`);
+        if (item) { showPanel(hash, item); }
+        else if (hash === 'become-seller') { showPanel('seller-access', document.querySelector('[onclick*="seller-access"]')); }
+      }
+    });
+
+    // ---- Render Orders ----
+    function renderOrders(orders) {
+      const el = document.getElementById('orders-list');
+      if (!orders.length) {
+        el.innerHTML = `<div class="empty-state-panel">
+          <div class="icon">🛒</div>
+          <p>No orders yet. The market awaits.</p>
+          <a href="shop.html" class="btn-primary" style="display:inline-flex"><span>⚔ Browse Shop</span></a>
+        </div>`;
+        return;
+      }
+      el.innerHTML = orders.map(o => {
+        const items = o.items || [];
+        const status = o.status || 'pending';
+        const total = o.total || 0;
+        const date = o.createdAt?.toDate ? o.createdAt.toDate().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '—';
+        return `<div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <div class="order-id">#${o.id.slice(-8).toUpperCase()}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${date}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="order-status status-${status}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>
+              <span style="font-family:var(--font-heading);font-size:15px;font-weight:700;color:var(--gold-bright)">$${Number(total).toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="order-card-items">
+            ${items.slice(0,4).map(i=>`<img class="order-item-thumb" src="${i.image||''}" alt="${i.title||''}" onerror="this.style.background='var(--obsidian-4)';this.src=''"/>`).join('')}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${status==='delivered'?`<button class="btn-ghost" style="font-size:12px;padding:6px 0;color:var(--gold)"><i class="ti ti-star"></i> Leave Review</button>`:''}
+            ${status==='shipped'?`<button class="btn-ghost" style="font-size:12px;padding:6px 0"><i class="ti ti-truck-delivery"></i> Track Package</button>`:''}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ---- Render Wishlist ----
+    function renderWishlist(products, ids) {
+      const el = document.getElementById('wishlist-grid');
+      if (!ids.length) {
+        el.innerHTML = `<div style="grid-column:1/-1" class="empty-state-panel">
+          <div class="icon">🤍</div>
+          <p>Your wishlist is empty.</p>
+          <a href="shop.html" class="btn-primary" style="display:inline-flex"><span>Browse Products</span></a>
+        </div>`;
+        return;
+      }
+      if (!products.length) {
+        // IDs exist but products didn't load (no Firebase) — show count
+        el.innerHTML = `<div style="grid-column:1/-1;padding:2rem;text-align:center;color:var(--text-muted)">
+          <div style="font-size:2rem;margin-bottom:.5rem">❤️</div>
+          <div style="font-size:13px">${ids.length} item${ids.length!==1?'s':''} saved — connect Firebase to see details</div>
+        </div>`;
+        return;
+      }
+      el.innerHTML = products.map(p=>`
+        <div class="wish-card" onclick="window.location.href='product.html?id=${p.id}'">
+          <div class="wish-card-img">
+            ${p.image ? `<img src="${p.image}" alt="${p.title}" loading="lazy"/>` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem">📦</div>'}
+          </div>
+          <div class="wish-card-body">
+            <div style="font-size:10px;color:var(--gold);font-family:var(--font-heading);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">${p.category||''}</div>
+            <div class="wish-card-title">${p.title}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+              <div class="wish-card-price">$${Number(p.price).toFixed(2)}</div>
+              <button class="card-action-btn" onclick="event.stopPropagation();addWishToCart(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="width:30px;height:30px;font-size:12px" title="Add to cart"><i class="ti ti-shopping-bag-plus"></i></button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    // ---- Seller Panel ----
+    async function renderSellerPanel(user) {
+      const el = document.getElementById('seller-access-content');
+      if (!el) return;
+
+      const profile = await getUserProfile(user.uid);
+      const isSeller = profile?.role === 'seller';
+      const isPending = profile?.sellerStatus === 'pending';
+
+      if (isSeller) {
+        el.innerHTML = `
+          <div style="background:linear-gradient(135deg,var(--obsidian-3),var(--obsidian-4));border:1px solid var(--border-bright);border-radius:var(--radius-xl);padding:2rem;margin-bottom:1.5rem">
+            <div style="font-size:2rem;margin-bottom:1rem">✅</div>
+            <div style="font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--emerald-bright);margin-bottom:8px">You are a verified seller</div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem">Manage your products, orders, and analytics from the seller dashboard.</p>
+            <a href="seller.html" class="btn-primary" style="display:inline-flex"><span>⚔ Open Seller Dashboard</span></a>
+          </div>`;
+        return;
+      }
+
+      if (isPending) {
+        el.innerHTML = `
+          <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:3rem;text-align:center">
+            <div style="font-size:3rem;margin-bottom:1rem">⏳</div>
+            <div style="font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--gold-bright);margin-bottom:8px">Application Under Review</div>
+            <p style="font-size:13px;color:var(--text-secondary)">We'll notify you by email once approved. Usually within 24 hours.</p>
+          </div>`;
+        return;
+      }
+
+      // Not yet a seller — show application form
+      el.innerHTML = `
+        <div style="background:linear-gradient(135deg,var(--obsidian-3),var(--obsidian-4));border:1px solid var(--border-bright);border-radius:var(--radius-xl);padding:2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden">
+          <div style="position:absolute;top:1rem;right:1.5rem;font-size:5rem;opacity:.06;pointer-events:none">🐉</div>
+          <div style="font-size:2.5rem;margin-bottom:1rem">🐉</div>
+          <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--gold-shimmer));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">Sell on NASTY</div>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:1.5rem;max-width:420px">Join thousands of sellers. AI writes your listings, tags your images, and puts your products in front of the right buyers. Free to start — 10% fee on sales only.</p>
+          <div class="seller-feature-grid">
+            <div class="seller-feature"><div style="font-size:1.2rem;margin-bottom:4px">✍️</div><div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:2px">AI Listing Writer</div><div style="font-size:11px;color:var(--text-muted)">Title, description & tags in seconds</div></div>
+            <div class="seller-feature"><div style="font-size:1.2rem;margin-bottom:4px">📸</div><div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:2px">Image Tagging</div><div style="font-size:11px;color:var(--text-muted)">Upload photo, AI detects category</div></div>
+            <div class="seller-feature"><div style="font-size:1.2rem;margin-bottom:4px">📊</div><div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:2px">Analytics</div><div style="font-size:11px;color:var(--text-muted)">Revenue, orders & store views</div></div>
+            <div class="seller-feature"><div style="font-size:1.2rem;margin-bottom:4px">🆓</div><div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:2px">Free to Start</div><div style="font-size:11px;color:var(--text-muted)">10% fee on sales only</div></div>
+          </div>
+        </div>
+        <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem">
+          <div style="font-family:var(--font-heading);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem">Apply to Sell</div>
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="form-group"><label class="form-label">Store Name</label><input type="text" class="form-input" id="seller-store-name" placeholder="Your store name"/></div>
+            <div class="form-group"><label class="form-label">Category</label>
+              <select class="form-input" id="seller-category">
+                <option>Fashion</option><option>Electronics</option><option>Beauty</option><option>Home</option><option>Sports</option><option>Books</option><option>Food</option><option>Toys</option><option>Automotive</option><option>Gaming</option><option>Other</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Short Description</label><textarea class="form-input" id="seller-bio" rows="2" placeholder="What will you sell?" style="resize:vertical"></textarea></div>
+            <div id="seller-apply-err" class="form-error"></div>
+            <button class="btn-primary" style="width:fit-content;font-size:12px;padding:11px 28px" onclick="applyAsSeller('${user.uid}')"><span>⚔ Submit Application</span></button>
+          </div>
+        </div>`;
+    }
+
+    window.applyAsSeller = async (uid) => {
+      const storeName = document.getElementById('seller-store-name')?.value.trim();
+      const err = document.getElementById('seller-apply-err');
+      if (!storeName) { err.textContent = 'Store name is required'; err.classList.add('show'); return; }
+      err.classList.remove('show');
+      try {
+        if (db) {
+          const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+          await updateDoc(doc(db, 'users', uid), {
+            sellerStatus: 'pending',
+            storeName,
+            sellerCategory: document.getElementById('seller-category')?.value,
+            sellerBio: document.getElementById('seller-bio')?.value
+          });
+        }
+        showToast('Application submitted! 🐉 We\'ll review it shortly.', 'success');
+        // Re-render as pending
+        document.getElementById('seller-access-content').innerHTML = `
+          <div style="background:var(--obsidian-3);border:1px solid var(--border);border-radius:var(--radius-xl);padding:3rem;text-align:center">
+            <div style="font-size:3rem;margin-bottom:1rem">⏳</div>
+            <div style="font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--gold-bright);margin-bottom:8px">Application Submitted</div>
+            <p style="font-size:13px;color:var(--text-secondary)">We'll review your application and notify you by email within 24 hours.</p>
+          </div>`;
+      } catch(e) {
+        showToast('Application saved! Add Firebase config to persist.', 'info');
+      }
+    };
+
+    // ---- Panel navigation ----
+    window.showPanel = (id, el) => {
+      document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.account-nav-item').forEach(i => i.classList.remove('active'));
+      document.getElementById('panel-' + id)?.classList.add('active');
+      el?.classList.add('active');
+      if (id === 'seller-access') {
+        const user = auth?.currentUser;
+        if (user) renderSellerPanel(user);
+      }
+    };
+
+    window.clearWishlist = () => {
+      localStorage.removeItem('nasty_wishlist');
+      renderWishlist([], []);
+      document.getElementById('stat-wishlist').textContent = '0';
+      showToast('Wishlist cleared', 'info');
+    };
+
+    window.addWishToCart = (p) => { cart.add(p); showToast(`${p.title} added to cart`, 'success'); };
+    window.saveProfile = () => showToast('Profile saved ✦', 'success');
+    window.changePassword = () => {
+      const np = document.getElementById('new-pass').value;
+      const cp = document.getElementById('confirm-pass').value;
+      if (!np || np.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+      if (np !== cp) { showToast('Passwords do not match', 'error'); return; }
+      showToast('Password updated ✦', 'success');
+    };
+    window.togglePw = (id, btn) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.type = el.type === 'text' ? 'password' : 'text';
+      btn.innerHTML = `<i class="ti ti-eye${el.type === 'text' ? '-off' : ''}"></i>`;
+    };
+    window.handleLogout = async () => { await logOut(); window.location.href = '../index.html'; };
+  </script>
+</body>
+</html>
